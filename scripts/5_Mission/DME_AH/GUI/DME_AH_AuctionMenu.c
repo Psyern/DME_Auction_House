@@ -154,8 +154,6 @@ class DME_AH_AuctionMenu : UIScriptedMenu
 		g_Game.GetInput().ChangeGameFocus(1);
 		g_Game.GetUIManager().ShowUICursor(true);
 		g_Game.GetMission().GetHud().Show(false);
-		TIntArray skip = {UAUIBack};
-		ForceDisableInputs(true, skip);
 	}
 
 	override void OnHide()
@@ -165,7 +163,6 @@ class DME_AH_AuctionMenu : UIScriptedMenu
 		if (!g_Game)
 			return;
 
-		ForceDisableInputs(false);
 		PPEffects.SetBlurMenu(0);
 		g_Game.GetInput().ResetGameFocus();
 		g_Game.GetUIManager().ShowUICursor(false);
