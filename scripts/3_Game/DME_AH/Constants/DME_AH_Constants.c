@@ -13,6 +13,7 @@ const string DME_AH_CATEGORIES_FILE = DME_AH_CONFIG_DIR + "Categories.json";
 const string DME_AH_ACTIVE_LISTINGS_FILE = DME_AH_DATA_DIR + "ActiveListings.json";
 const string DME_AH_COMPLETED_LISTINGS_FILE = DME_AH_DATA_DIR + "CompletedListings.json";
 const string DME_AH_PLAYER_DATA_FILE = DME_AH_DATA_DIR + "PlayerData.json";
+const string DME_AH_NPC_FILE = DME_AH_CONFIG_DIR + "NPCs.json";
 
 // Menu IDs
 const int MENU_DME_AH_AUCTION = 10100;

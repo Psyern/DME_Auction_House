@@ -5,6 +5,7 @@ class DME_AH_Module
 {
 	protected ref DME_AH_Config m_Config;
 	protected ref DME_AH_CategoryConfig m_CategoryConfig;
+	protected ref DME_AH_NPCConfig m_NPCConfig;
 	protected ref DME_AH_DataStore m_DataStore;
 	protected ref DME_AH_AuctionManager m_AuctionManager;
 	protected ref DME_AH_CurrencyAdapter m_CurrencyAdapter;
@@ -41,6 +42,9 @@ class DME_AH_Module
 
 		m_CategoryConfig = DME_AH_CategoryConfig.Load();
 		DME_AH_Logger.Info("Categories loaded (" + m_CategoryConfig.Categories.Count().ToString() + " categories)");
+
+		m_NPCConfig = DME_AH_NPCConfig.Load();
+		DME_AH_Logger.Info("NPC config loaded (" + m_NPCConfig.NPCs.Count().ToString() + " NPCs defined)");
 
 		m_DataStore = new DME_AH_DataStore();
 		m_DataStore.SetAutoSaveInterval(m_Config.AutoSaveIntervalSeconds);
@@ -124,6 +128,11 @@ class DME_AH_Module
 	DME_AH_CategoryConfig GetCategoryConfig()
 	{
 		return m_CategoryConfig;
+	}
+
+	DME_AH_NPCConfig GetNPCConfig()
+	{
+		return m_NPCConfig;
 	}
 
 	DME_AH_DataStore GetDataStore()
