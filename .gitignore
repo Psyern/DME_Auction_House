@@ -1,8 +1,8 @@
 # Superpowers brainstorming sessions
 .superpowers/
 
-# Claude Code settings (local)
-.claude/settings.local.json
+# Claude Code
+.claude/
 
 # DayZ build outputs
 *.pbo
