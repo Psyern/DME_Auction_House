@@ -52,7 +52,7 @@ class DME_AH_NPCSpawner
 			position = Vector(position[0], surfaceY, position[2]);
 		}
 
-		Object obj = g_Game.CreateObjectEx(entry.ClassName, position, ECE_PLACE | ECE_CREATEPHYSICS);
+		Object obj = g_Game.CreateObject(entry.ClassName, position, false, false, true);
 		if (!obj)
 		{
 			DME_AH_Logger.Error("Failed to spawn NPC ID " + entry.ID.ToString() + " (" + entry.ClassName + ")");
