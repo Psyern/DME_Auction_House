@@ -19,7 +19,7 @@ class DME_AH_Config
 	int AutoSaveIntervalSeconds = 300;
 	int MaxHistoryEntries = 500;
 	bool NotificationsEnabled = true;
-	int LogLevel = 1;
+	int DebugLogLevel = 1;
 
 	void DME_AH_Config()
 	{
@@ -43,7 +43,7 @@ class DME_AH_Config
 		MinBidIncrementPercent = Math.Clamp(MinBidIncrementPercent, 1, 50);
 		AutoSaveIntervalSeconds = Math.Clamp(AutoSaveIntervalSeconds, 60, 3600);
 		MaxHistoryEntries = Math.Clamp(MaxHistoryEntries, 10, 10000);
-		LogLevel = Math.Clamp(LogLevel, 0, 4);
+		DebugLogLevel = Math.Clamp(DebugLogLevel, 0, 4);
 
 		if (!AllowedDurations || AllowedDurations.Count() == 0)
 		{

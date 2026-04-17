@@ -24,7 +24,7 @@ class DME_AH_Bid
 	{
 		int timestamp = 0;
 		if (g_Game)
-			timestamp = CF_Date.Now(true).GetTimestamp();
+			timestamp = DME_AH_Util.GetTimestamp();
 		int random = Math.RandomInt(10000, 99999);
 		return "BID_" + timestamp.ToString() + "_" + random.ToString();
 	}

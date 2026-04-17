@@ -1,6 +1,6 @@
-// DME Auction House - Client-side Module Init
+// DME Auction House - Server-side Module Init
 
-modded class MissionGameplay
+modded class MissionServer
 {
 	override void OnInit()
 	{
@@ -10,7 +10,7 @@ modded class MissionGameplay
 		if (module)
 			module.Init();
 
-		DME_AH_Util.LogPrint("MissionGameplay initialized");
+		DME_AH_Util.LogPrint("MissionServer initialized");
 	}
 
 	override void OnMissionFinish()

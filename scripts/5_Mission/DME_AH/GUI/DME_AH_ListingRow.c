@@ -38,7 +38,7 @@ class DME_AH_ListingRow
 
 	string GetTimeRemainingString()
 	{
-		int currentTime = CF_Date.Now(true).GetTimestamp();
+		int currentTime = DME_AH_Util.GetTimestamp();
 		int remaining = ExpiresTimestamp - currentTime;
 		if (remaining <= 0)
 			return "Expired";

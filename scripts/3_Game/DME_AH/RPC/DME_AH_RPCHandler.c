@@ -1,4 +1,5 @@
-// DME Auction House - RPC Handler (CF RPC System)
+// DME Auction House - RPC Handler (Native ScriptRPC)
+// Uses ScriptRPC.Send() for sending, OnRPC() for receiving
 
 class DME_AH_RPCHandler
 {
@@ -15,54 +16,66 @@ class DME_AH_RPCHandler
 		m_DataStore = dataStore;
 		m_CurrencyAdapter = currencyAdapter;
 		m_CategoryConfig = categoryConfig;
+		DME_AH_Logger.Info("RPCHandler initialized");
 	}
 
-	void RegisterRPCs()
+	// Called from modded MissionServer OnRPC
+	void OnRPC(PlayerIdentity sender, Object target, int rpc_type, ParamsReadContext ctx)
 	{
-		if (!GetRPCManager())
-			return;
-
-		GetRPCManager().AddRPC("DME_AH_RPCHandler", "RPC_RequestListings", this, SingleplayerExecutionType.Server);
-		GetRPCManager().AddRPC("DME_AH_RPCHandler", "RPC_CreateListing", this, SingleplayerExecutionType.Server);
-		GetRPCManager().AddRPC("DME_AH_RPCHandler", "RPC_PlaceBid", this, SingleplayerExecutionType.Server);
-		GetRPCManager().AddRPC("DME_AH_RPCHandler", "RPC_BuyNow", this, SingleplayerExecutionType.Server);
-		GetRPCManager().AddRPC("DME_AH_RPCHandler", "RPC_CancelListing", this, SingleplayerExecutionType.Server);
-		GetRPCManager().AddRPC("DME_AH_RPCHandler", "RPC_RequestMyListings", this, SingleplayerExecutionType.Server);
-		GetRPCManager().AddRPC("DME_AH_RPCHandler", "RPC_RequestMyBids", this, SingleplayerExecutionType.Server);
-		GetRPCManager().AddRPC("DME_AH_RPCHandler", "RPC_RequestHistory", this, SingleplayerExecutionType.Server);
-		GetRPCManager().AddRPC("DME_AH_RPCHandler", "RPC_RequestBalance", this, SingleplayerExecutionType.Server);
-		GetRPCManager().AddRPC("DME_AH_RPCHandler", "RPC_RequestCategories", this, SingleplayerExecutionType.Server);
-
-		GetRPCManager().AddRPC("DME_AH_RPCHandler", "RPC_SendListings", this, SingleplayerExecutionType.Client);
-		GetRPCManager().AddRPC("DME_AH_RPCHandler", "RPC_SendMyListings", this, SingleplayerExecutionType.Client);
-		GetRPCManager().AddRPC("DME_AH_RPCHandler", "RPC_SendMyBids", this, SingleplayerExecutionType.Client);
-		GetRPCManager().AddRPC("DME_AH_RPCHandler", "RPC_SendHistory", this, SingleplayerExecutionType.Client);
-		GetRPCManager().AddRPC("DME_AH_RPCHandler", "RPC_Callback", this, SingleplayerExecutionType.Client);
-		GetRPCManager().AddRPC("DME_AH_RPCHandler", "RPC_Notification", this, SingleplayerExecutionType.Client);
-		GetRPCManager().AddRPC("DME_AH_RPCHandler", "RPC_SendBalance", this, SingleplayerExecutionType.Client);
-		GetRPCManager().AddRPC("DME_AH_RPCHandler", "RPC_SendCategories", this, SingleplayerExecutionType.Client);
-		GetRPCManager().AddRPC("DME_AH_RPCHandler", "RPC_SendConfig", this, SingleplayerExecutionType.Client);
-
-		DME_AH_Logger.Info("RPCs registered");
+		switch (rpc_type)
+		{
+			case EDME_AH_RPC.DME_AH_RPC_REQUEST_LISTINGS:
+				RPC_RequestListings(ctx, sender, target);
+				break;
+			case EDME_AH_RPC.DME_AH_RPC_CREATE_LISTING:
+				RPC_CreateListing(ctx, sender, target);
+				break;
+			case EDME_AH_RPC.DME_AH_RPC_PLACE_BID:
+				RPC_PlaceBid(ctx, sender, target);
+				break;
+			case EDME_AH_RPC.DME_AH_RPC_BUY_NOW:
+				RPC_BuyNow(ctx, sender, target);
+				break;
+			case EDME_AH_RPC.DME_AH_RPC_CANCEL_LISTING:
+				RPC_CancelListing(ctx, sender, target);
+				break;
+			case EDME_AH_RPC.DME_AH_RPC_REQUEST_MY_LISTINGS:
+				RPC_RequestMyListings(ctx, sender, target);
+				break;
+			case EDME_AH_RPC.DME_AH_RPC_REQUEST_MY_BIDS:
+				RPC_RequestMyBids(ctx, sender, target);
+				break;
+			case EDME_AH_RPC.DME_AH_RPC_REQUEST_HISTORY:
+				RPC_RequestHistory(ctx, sender, target);
+				break;
+			case EDME_AH_RPC.DME_AH_RPC_REQUEST_BALANCE:
+				RPC_RequestBalance(ctx, sender, target);
+				break;
+			case EDME_AH_RPC.DME_AH_RPC_REQUEST_CATEGORIES:
+				RPC_RequestCategories(ctx, sender, target);
+				break;
+		}
 	}
 
-	// ===== SERVER-SIDE RPC HANDLERS =====
+	// ===== SERVER-SIDE HANDLERS =====
 
-	void RPC_RequestListings(CallType type, ParamsReadContext ctx, PlayerIdentity sender, Object target)
+	protected void RPC_RequestListings(ParamsReadContext ctx, PlayerIdentity sender, Object target)
 	{
-		if (type != CallType.Server)
-			return;
 		if (!sender || !m_AuctionManager)
 			return;
 
-		Param4<int, string, int, int> data;
-		if (!ctx.Read(data))
+		int categoryID;
+		if (!ctx.Read(categoryID))
 			return;
-
-		int categoryID = data.param1;
-		string searchText = data.param2;
-		int sortMode = data.param3;
-		int page = data.param4;
+		string searchText;
+		if (!ctx.Read(searchText))
+			return;
+		int sortMode;
+		if (!ctx.Read(sortMode))
+			return;
+		int page;
+		if (!ctx.Read(page))
+			return;
 
 		array<ref DME_AH_Listing> listings = m_AuctionManager.GetFilteredListings(categoryID, searchText, sortMode, page);
 		int totalCount = m_AuctionManager.GetFilteredListingsCount(categoryID, searchText);
@@ -70,121 +83,129 @@ class DME_AH_RPCHandler
 		if (totalCount % DME_AH_LISTINGS_PER_PAGE > 0)
 			totalPages = totalPages + 1;
 
-		string listingsJson = SerializeListings(listings);
-		Param3<string, int, int> response = new Param3<string, int, int>(listingsJson, totalPages, page);
-		GetRPCManager().SendRPC("DME_AH_RPCHandler", "RPC_SendListings", response, true, sender);
+		string listingsData = SerializeListings(listings);
+
+		ScriptRPC rpc = new ScriptRPC();
+		rpc.Write(listingsData);
+		rpc.Write(totalPages);
+		rpc.Write(page);
+		rpc.Send(target, EDME_AH_RPC.DME_AH_RPC_SEND_LISTINGS, true, sender);
 	}
 
-	void RPC_CreateListing(CallType type, ParamsReadContext ctx, PlayerIdentity sender, Object target)
+	protected void RPC_CreateListing(ParamsReadContext ctx, PlayerIdentity sender, Object target)
 	{
-		if (type != CallType.Server)
-			return;
 		if (!sender || !m_AuctionManager)
 			return;
 
-		Param6<string, int, int, int, int, int> data;
-		if (!ctx.Read(data))
+		string itemClassName;
+		if (!ctx.Read(itemClassName))
 			return;
-
-		string itemClassName = data.param1;
-		int listingType = data.param2;
-		int startPrice = data.param3;
-		int buyNowPrice = data.param4;
-		int durationMinutes = data.param5;
-		int categoryID = data.param6;
+		int listingType;
+		if (!ctx.Read(listingType))
+			return;
+		int startPrice;
+		if (!ctx.Read(startPrice))
+			return;
+		int buyNowPrice;
+		if (!ctx.Read(buyNowPrice))
+			return;
+		int durationMinutes;
+		if (!ctx.Read(durationMinutes))
+			return;
+		int categoryID;
+		if (!ctx.Read(categoryID))
+			return;
 
 		string playerUID = sender.GetPlainId();
 		string playerName = sender.GetName();
 
 		int result = m_AuctionManager.CreateListing(playerUID, playerName, itemClassName, listingType, startPrice, buyNowPrice, durationMinutes, categoryID);
 
-		Param2<int, string> response = new Param2<int, string>(result, itemClassName);
-		GetRPCManager().SendRPC("DME_AH_RPCHandler", "RPC_Callback", response, true, sender);
+		ScriptRPC rpc = new ScriptRPC();
+		rpc.Write(result);
+		rpc.Write(itemClassName);
+		rpc.Send(target, EDME_AH_RPC.DME_AH_RPC_CALLBACK, true, sender);
 	}
 
-	void RPC_PlaceBid(CallType type, ParamsReadContext ctx, PlayerIdentity sender, Object target)
+	protected void RPC_PlaceBid(ParamsReadContext ctx, PlayerIdentity sender, Object target)
 	{
-		if (type != CallType.Server)
-			return;
 		if (!sender || !m_AuctionManager)
 			return;
 
-		Param2<string, int> data;
-		if (!ctx.Read(data))
+		string listingID;
+		if (!ctx.Read(listingID))
 			return;
-
-		string listingID = data.param1;
-		int bidAmount = data.param2;
+		int bidAmount;
+		if (!ctx.Read(bidAmount))
+			return;
 
 		string playerUID = sender.GetPlainId();
 		string playerName = sender.GetName();
 
 		int result = m_AuctionManager.PlaceBid(playerUID, playerName, listingID, bidAmount);
 
-		Param2<int, string> response = new Param2<int, string>(result, listingID);
-		GetRPCManager().SendRPC("DME_AH_RPCHandler", "RPC_Callback", response, true, sender);
+		ScriptRPC rpc = new ScriptRPC();
+		rpc.Write(result);
+		rpc.Write(listingID);
+		rpc.Send(target, EDME_AH_RPC.DME_AH_RPC_CALLBACK, true, sender);
 	}
 
-	void RPC_BuyNow(CallType type, ParamsReadContext ctx, PlayerIdentity sender, Object target)
+	protected void RPC_BuyNow(ParamsReadContext ctx, PlayerIdentity sender, Object target)
 	{
-		if (type != CallType.Server)
-			return;
 		if (!sender || !m_AuctionManager)
 			return;
 
-		Param1<string> data;
-		if (!ctx.Read(data))
+		string listingID;
+		if (!ctx.Read(listingID))
 			return;
 
-		string listingID = data.param1;
 		string playerUID = sender.GetPlainId();
 		string playerName = sender.GetName();
 
 		int result = m_AuctionManager.BuyNow(playerUID, playerName, listingID);
 
-		Param2<int, string> response = new Param2<int, string>(result, listingID);
-		GetRPCManager().SendRPC("DME_AH_RPCHandler", "RPC_Callback", response, true, sender);
+		ScriptRPC rpc = new ScriptRPC();
+		rpc.Write(result);
+		rpc.Write(listingID);
+		rpc.Send(target, EDME_AH_RPC.DME_AH_RPC_CALLBACK, true, sender);
 	}
 
-	void RPC_CancelListing(CallType type, ParamsReadContext ctx, PlayerIdentity sender, Object target)
+	protected void RPC_CancelListing(ParamsReadContext ctx, PlayerIdentity sender, Object target)
 	{
-		if (type != CallType.Server)
-			return;
 		if (!sender || !m_AuctionManager)
 			return;
 
-		Param1<string> data;
-		if (!ctx.Read(data))
+		string listingID;
+		if (!ctx.Read(listingID))
 			return;
 
-		string listingID = data.param1;
 		string playerUID = sender.GetPlainId();
 
 		int result = m_AuctionManager.CancelListing(playerUID, listingID);
 
-		Param2<int, string> response = new Param2<int, string>(result, listingID);
-		GetRPCManager().SendRPC("DME_AH_RPCHandler", "RPC_Callback", response, true, sender);
+		ScriptRPC rpc = new ScriptRPC();
+		rpc.Write(result);
+		rpc.Write(listingID);
+		rpc.Send(target, EDME_AH_RPC.DME_AH_RPC_CALLBACK, true, sender);
 	}
 
-	void RPC_RequestMyListings(CallType type, ParamsReadContext ctx, PlayerIdentity sender, Object target)
+	protected void RPC_RequestMyListings(ParamsReadContext ctx, PlayerIdentity sender, Object target)
 	{
-		if (type != CallType.Server)
-			return;
 		if (!sender || !m_DataStore)
 			return;
 
 		string playerUID = sender.GetPlainId();
 		array<ref DME_AH_Listing> myListings = m_DataStore.GetListingsBySeller(playerUID);
 
-		string listingsJson = SerializeListings(myListings);
-		Param1<string> response = new Param1<string>(listingsJson);
-		GetRPCManager().SendRPC("DME_AH_RPCHandler", "RPC_SendMyListings", response, true, sender);
+		string listingsData = SerializeListings(myListings);
+
+		ScriptRPC rpc = new ScriptRPC();
+		rpc.Write(listingsData);
+		rpc.Send(target, EDME_AH_RPC.DME_AH_RPC_SEND_MY_LISTINGS, true, sender);
 	}
 
-	void RPC_RequestMyBids(CallType type, ParamsReadContext ctx, PlayerIdentity sender, Object target)
+	protected void RPC_RequestMyBids(ParamsReadContext ctx, PlayerIdentity sender, Object target)
 	{
-		if (type != CallType.Server)
-			return;
 		if (!sender || !m_DataStore)
 			return;
 
@@ -199,109 +220,52 @@ class DME_AH_RPCHandler
 				myBids.Insert(listing);
 		}
 
-		string listingsJson = SerializeListings(myBids);
-		Param1<string> response = new Param1<string>(listingsJson);
-		GetRPCManager().SendRPC("DME_AH_RPCHandler", "RPC_SendMyBids", response, true, sender);
+		string listingsData = SerializeListings(myBids);
+
+		ScriptRPC rpc = new ScriptRPC();
+		rpc.Write(listingsData);
+		rpc.Send(target, EDME_AH_RPC.DME_AH_RPC_SEND_MY_BIDS, true, sender);
 	}
 
-	void RPC_RequestHistory(CallType type, ParamsReadContext ctx, PlayerIdentity sender, Object target)
+	protected void RPC_RequestHistory(ParamsReadContext ctx, PlayerIdentity sender, Object target)
 	{
-		if (type != CallType.Server)
-			return;
 		if (!sender || !m_DataStore)
 			return;
 
-		Param1<int> data;
-		if (!ctx.Read(data))
-			return;
+		string historyData = "";
 
-		int page = data.param1;
-		array<ref DME_AH_Transaction> history = m_DataStore.GetTransactionHistory();
-
-		int startIdx = page * DME_AH_HISTORY_PER_PAGE;
-		int endIdx = startIdx + DME_AH_HISTORY_PER_PAGE;
-		if (endIdx > history.Count())
-			endIdx = history.Count();
-
-		string historyJson = "[]";
-		Param2<string, int> response = new Param2<string, int>(historyJson, history.Count());
-		GetRPCManager().SendRPC("DME_AH_RPCHandler", "RPC_SendHistory", response, true, sender);
+		ScriptRPC rpc = new ScriptRPC();
+		rpc.Write(historyData);
+		rpc.Write(0);
+		rpc.Send(target, EDME_AH_RPC.DME_AH_RPC_SEND_HISTORY, true, sender);
 	}
 
-	void RPC_RequestBalance(CallType type, ParamsReadContext ctx, PlayerIdentity sender, Object target)
+	protected void RPC_RequestBalance(ParamsReadContext ctx, PlayerIdentity sender, Object target)
 	{
-		if (type != CallType.Server)
-			return;
 		if (!sender || !m_CurrencyAdapter)
 			return;
 
 		string playerUID = sender.GetPlainId();
 		int balance = m_CurrencyAdapter.GetBalance(playerUID);
 
-		Param1<int> response = new Param1<int>(balance);
-		GetRPCManager().SendRPC("DME_AH_RPCHandler", "RPC_SendBalance", response, true, sender);
+		ScriptRPC rpc = new ScriptRPC();
+		rpc.Write(balance);
+		rpc.Send(target, EDME_AH_RPC.DME_AH_RPC_SEND_BALANCE, true, sender);
 	}
 
-	void RPC_RequestCategories(CallType type, ParamsReadContext ctx, PlayerIdentity sender, Object target)
+	protected void RPC_RequestCategories(ParamsReadContext ctx, PlayerIdentity sender, Object target)
 	{
-		if (type != CallType.Server)
-			return;
 		if (!sender || !m_CategoryConfig)
 			return;
 
-		string categoriesJson = "[]";
-		Param1<string> response = new Param1<string>(categoriesJson);
-		GetRPCManager().SendRPC("DME_AH_RPCHandler", "RPC_SendCategories", response, true, sender);
+		string categoriesData = "";
+
+		ScriptRPC rpc = new ScriptRPC();
+		rpc.Write(categoriesData);
+		rpc.Send(target, EDME_AH_RPC.DME_AH_RPC_SEND_CATEGORIES, true, sender);
 	}
 
-	// ===== CLIENT-SIDE RPC HANDLERS (stubs - handled by menu) =====
-
-	void RPC_SendListings(CallType type, ParamsReadContext ctx, PlayerIdentity sender, Object target)
-	{
-		// Handled by DME_AH_AuctionMenu
-	}
-
-	void RPC_SendMyListings(CallType type, ParamsReadContext ctx, PlayerIdentity sender, Object target)
-	{
-		// Handled by DME_AH_AuctionMenu
-	}
-
-	void RPC_SendMyBids(CallType type, ParamsReadContext ctx, PlayerIdentity sender, Object target)
-	{
-		// Handled by DME_AH_AuctionMenu
-	}
-
-	void RPC_SendHistory(CallType type, ParamsReadContext ctx, PlayerIdentity sender, Object target)
-	{
-		// Handled by DME_AH_AuctionMenu
-	}
-
-	void RPC_Callback(CallType type, ParamsReadContext ctx, PlayerIdentity sender, Object target)
-	{
-		// Handled by DME_AH_AuctionMenu
-	}
-
-	void RPC_Notification(CallType type, ParamsReadContext ctx, PlayerIdentity sender, Object target)
-	{
-		// Handled by DME_AH_NotificationHandler
-	}
-
-	void RPC_SendBalance(CallType type, ParamsReadContext ctx, PlayerIdentity sender, Object target)
-	{
-		// Handled by DME_AH_AuctionMenu
-	}
-
-	void RPC_SendCategories(CallType type, ParamsReadContext ctx, PlayerIdentity sender, Object target)
-	{
-		// Handled by DME_AH_AuctionMenu
-	}
-
-	void RPC_SendConfig(CallType type, ParamsReadContext ctx, PlayerIdentity sender, Object target)
-	{
-		// Handled by DME_AH_AuctionMenu
-	}
-
-	// ===== Serialization Helpers =====
+	// ===== Serialization =====
 
 	protected string SerializeListings(array<ref DME_AH_Listing> listings)
 	{
@@ -313,7 +277,20 @@ class DME_AH_RPCHandler
 				continue;
 			if (i > 0)
 				result = result + "|";
-			result = result + listing.ListingID + ";" + listing.SellerName + ";" + listing.ItemClassName + ";" + listing.ItemDisplayName + ";" + listing.CategoryID.ToString() + ";" + listing.ListingType.ToString() + ";" + listing.StartPrice.ToString() + ";" + listing.BuyNowPrice.ToString() + ";" + listing.CurrentBid.ToString() + ";" + listing.CurrentBidderName + ";" + listing.BidCount.ToString() + ";" + listing.ExpiresTimestamp.ToString() + ";" + listing.Status.ToString();
+			string row = listing.ListingID;
+			row = row + ";" + listing.SellerName;
+			row = row + ";" + listing.ItemClassName;
+			row = row + ";" + listing.ItemDisplayName;
+			row = row + ";" + listing.CategoryID.ToString();
+			row = row + ";" + listing.ListingType.ToString();
+			row = row + ";" + listing.StartPrice.ToString();
+			row = row + ";" + listing.BuyNowPrice.ToString();
+			row = row + ";" + listing.CurrentBid.ToString();
+			row = row + ";" + listing.CurrentBidderName;
+			row = row + ";" + listing.BidCount.ToString();
+			row = row + ";" + listing.ExpiresTimestamp.ToString();
+			row = row + ";" + listing.Status.ToString();
+			result = result + row;
 		}
 		return result;
 	}

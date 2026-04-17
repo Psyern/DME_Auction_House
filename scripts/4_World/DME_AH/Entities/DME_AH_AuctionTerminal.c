@@ -1,6 +1,6 @@
 // DME Auction House - Auction Terminal (Placeable Object)
 
-class DME_AH_AuctionTerminal : HouseNoDestruct
+class DME_AH_AuctionTerminal : House
 {
 	override void SetActions()
 	{

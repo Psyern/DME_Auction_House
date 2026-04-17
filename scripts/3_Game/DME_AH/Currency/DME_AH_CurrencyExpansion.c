@@ -1,6 +1,6 @@
 // DME Auction House - Expansion Market Currency Adapter
-// Uses ExpansionMarketModule API for money operations
-// Supports both physical money (inventory) and ATM balance
+// NO compile-time dependency on Expansion or 4_World types
+// Uses Man/EntityAI (available in 3_Game) instead of PlayerBase
 
 class DME_AH_CurrencyExpansion : DME_AH_CurrencyAdapter
 {
@@ -16,20 +16,11 @@ class DME_AH_CurrencyExpansion : DME_AH_CurrencyAdapter
 
 	override int GetBalance(string playerUID)
 	{
-		PlayerBase player = GetPlayerByUID(playerUID);
+		Man player = GetPlayerByUID(playerUID);
 		if (!player)
-		{
-			// Player offline - check ATM data only
-			return GetATMBalance(playerUID);
-		}
-
-		ExpansionMarketModule market = GetMarketModule();
-		if (!market)
 			return 0;
 
-		array<int> monies = new array<int>;
-		int totalWorth = market.GetPlayerWorth(player, monies);
-		return totalWorth;
+		return CountMoneyInInventory(player);
 	}
 
 	override bool Deduct(string playerUID, int amount)
@@ -37,40 +28,15 @@ class DME_AH_CurrencyExpansion : DME_AH_CurrencyAdapter
 		if (amount <= 0)
 			return false;
 
-		PlayerBase player = GetPlayerByUID(playerUID);
+		Man player = GetPlayerByUID(playerUID);
 		if (!player)
-		{
-			// Player offline - deduct from ATM only
-			return DeductFromATM(playerUID, amount);
-		}
-
-		ExpansionMarketModule market = GetMarketModule();
-		if (!market)
 			return false;
 
-		// Step 1: Find and reserve money
-		array<int> monies = new array<int>;
-		bool found = market.FindMoneyAndCountTypes(player, amount, monies, true);
-		if (!found)
-		{
-			market.UnlockMoney(player);
+		int available = CountMoneyInInventory(player);
+		if (available < amount)
 			return false;
-		}
 
-		// Step 2: Remove reserved money
-		int totalRemoved = market.RemoveMoney(player);
-
-		// Step 3: Spawn change if overpaid
-		if (totalRemoved > amount)
-		{
-			int change = totalRemoved - amount;
-			EntityAI parent = player;
-			market.SpawnMoney(player, parent, change, true);
-			market.CheckSpawn(player, parent);
-		}
-
-		DME_AH_Logger.Debug("CurrencyExpansion: Deducted " + amount.ToString() + " from " + playerUID);
-		return true;
+		return RemoveMoneyFromInventory(player, amount);
 	}
 
 	override bool Add(string playerUID, int amount)
@@ -78,89 +44,158 @@ class DME_AH_CurrencyExpansion : DME_AH_CurrencyAdapter
 		if (amount <= 0)
 			return false;
 
-		PlayerBase player = GetPlayerByUID(playerUID);
+		Man player = GetPlayerByUID(playerUID);
 		if (!player)
 		{
-			// Player offline - add to ATM
-			return AddToATM(playerUID, amount);
+			DME_AH_Logger.Warning("CurrencyExpansion: Player offline, cannot add money");
+			return false;
 		}
 
-		ExpansionMarketModule market = GetMarketModule();
-		if (!market)
-			return false;
+		return SpawnMoneyToInventory(player, amount);
+	}
 
-		EntityAI parent = player;
-		array<ItemBase> spawned = market.SpawnMoney(player, parent, amount, true);
-		market.CheckSpawn(player, parent);
+	protected int CountMoneyInInventory(Man player)
+	{
+		if (!player)
+			return 0;
 
-		if (!spawned || spawned.Count() == 0)
+		int total = 0;
+		array<EntityAI> items = new array<EntityAI>;
+		player.GetInventory().EnumerateInventory(InventoryTraversalType.PREORDER, items);
+
+		for (int i = 0; i < items.Count(); i++)
 		{
-			// Inventory full - deposit to ATM instead
-			DME_AH_Logger.Warning("CurrencyExpansion: Inventory full, depositing to ATM");
-			return AddToATM(playerUID, amount);
+			EntityAI item = items[i];
+			if (!item)
+				continue;
+
+			int moneyValue = GetMoneyValue(item);
+			if (moneyValue > 0)
+			{
+				int quantity = item.GetQuantity();
+				if (quantity < 1)
+					quantity = 1;
+				total = total + (moneyValue * quantity);
+			}
+		}
+		return total;
+	}
+
+	protected bool RemoveMoneyFromInventory(Man player, int amount)
+	{
+		if (!player || amount <= 0)
+			return false;
+
+		int remaining = amount;
+		array<EntityAI> items = new array<EntityAI>;
+		player.GetInventory().EnumerateInventory(InventoryTraversalType.PREORDER, items);
+
+		for (int i = 0; i < items.Count(); i++)
+		{
+			if (remaining <= 0)
+				break;
+
+			EntityAI item = items[i];
+			if (!item)
+				continue;
+
+			int moneyValue = GetMoneyValue(item);
+			if (moneyValue <= 0)
+				continue;
+
+			int quantity = item.GetQuantity();
+			if (quantity < 1)
+				quantity = 1;
+
+			int itemTotal = moneyValue * quantity;
+
+			if (itemTotal <= remaining)
+			{
+				remaining = remaining - itemTotal;
+				if (g_Game)
+					g_Game.ObjectDelete(item);
+			}
+			else
+			{
+				int removeQty = remaining / moneyValue;
+				if (removeQty > 0)
+				{
+					int newQty = quantity - removeQty;
+					item.SetQuantity(newQty);
+					remaining = remaining - (removeQty * moneyValue);
+				}
+				if (remaining > 0 && remaining < moneyValue)
+					remaining = 0;
+			}
 		}
 
-		DME_AH_Logger.Debug("CurrencyExpansion: Added " + amount.ToString() + " to " + playerUID);
+		return remaining <= 0;
+	}
+
+	protected bool SpawnMoneyToInventory(Man player, int amount)
+	{
+		if (!player || amount <= 0)
+			return false;
+
+		string moneyClass = "ExpansionBanknoteUSD";
+		int remaining = amount;
+		int maxIterations = 1000;
+		int iteration = 0;
+
+		while (remaining > 0 && iteration < maxIterations)
+		{
+			EntityAI spawned = player.GetInventory().CreateInInventory(moneyClass);
+			if (!spawned)
+			{
+				DME_AH_Logger.Warning("CurrencyExpansion: Failed to spawn money");
+				return false;
+			}
+
+			int value = GetMoneyValue(spawned);
+			if (value <= 0)
+				value = 1;
+
+			if (remaining >= value)
+				remaining = remaining - value;
+			else
+				remaining = 0;
+
+			iteration = iteration + 1;
+		}
+
 		return true;
 	}
 
-	// --- ATM Operations (for offline players) ---
-	protected int GetATMBalance(string playerUID)
+	protected int GetMoneyValue(EntityAI item)
 	{
-		ExpansionMarketModule market = GetMarketModule();
-		if (!market)
+		if (!item)
 			return 0;
 
-		ExpansionMarketATM_Data atmData = market.GetPlayerATMData(playerUID);
-		if (!atmData)
-			return 0;
+		string typeName = item.GetType();
+		typeName.ToLower();
 
-		return atmData.GetMoney();
+		if (typeName.Contains("expansionbanknote") || typeName.Contains("expansiongold") || typeName.Contains("expansionsilver"))
+		{
+			string cfgPath = "CfgVehicles " + item.GetType() + " ExpansionMoneyValue";
+			if (g_Game && g_Game.ConfigIsExisting(cfgPath))
+				return g_Game.ConfigGetInt(cfgPath);
+
+			if (typeName.Contains("goldbar"))
+				return 10000;
+			if (typeName.Contains("goldnugget"))
+				return 1000;
+			if (typeName.Contains("silverbar"))
+				return 100;
+			if (typeName.Contains("silvernugget"))
+				return 10;
+			if (typeName.Contains("banknote"))
+				return 1;
+		}
+
+		return 0;
 	}
 
-	protected bool DeductFromATM(string playerUID, int amount)
-	{
-		ExpansionMarketModule market = GetMarketModule();
-		if (!market)
-			return false;
-
-		ExpansionMarketATM_Data atmData = market.GetPlayerATMData(playerUID);
-		if (!atmData)
-			return false;
-
-		int atmBalance = atmData.GetMoney();
-		if (atmBalance < amount)
-			return false;
-
-		atmData.RemoveMoney(amount);
-		atmData.Save();
-		DME_AH_Logger.Debug("CurrencyExpansion: Deducted " + amount.ToString() + " from ATM for " + playerUID);
-		return true;
-	}
-
-	protected bool AddToATM(string playerUID, int amount)
-	{
-		ExpansionMarketModule market = GetMarketModule();
-		if (!market)
-			return false;
-
-		ExpansionMarketATM_Data atmData = market.GetPlayerATMData(playerUID);
-		if (!atmData)
-			return false;
-
-		atmData.AddMoney(amount);
-		atmData.Save();
-		DME_AH_Logger.Debug("CurrencyExpansion: Added " + amount.ToString() + " to ATM for " + playerUID);
-		return true;
-	}
-
-	// --- Helpers ---
-	protected ExpansionMarketModule GetMarketModule()
-	{
-		return ExpansionMarketModule.GetInstance();
-	}
-
-	protected PlayerBase GetPlayerByUID(string playerUID)
+	protected Man GetPlayerByUID(string playerUID)
 	{
 		if (!g_Game)
 			return null;
@@ -173,14 +208,11 @@ class DME_AH_CurrencyExpansion : DME_AH_CurrencyAdapter
 			Man man = players[i];
 			if (!man)
 				continue;
-			PlayerBase player = PlayerBase.Cast(man);
-			if (!player)
-				continue;
-			PlayerIdentity identity = player.GetIdentity();
+			PlayerIdentity identity = man.GetIdentity();
 			if (!identity)
 				continue;
 			if (identity.GetPlainId() == playerUID)
-				return player;
+				return man;
 		}
 		return null;
 	}

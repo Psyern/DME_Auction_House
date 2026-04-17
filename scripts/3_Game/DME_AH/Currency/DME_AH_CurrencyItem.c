@@ -1,4 +1,5 @@
 // DME Auction House - In-Game Item Currency Adapter
+// Uses Man/EntityAI (3_Game layer compatible)
 
 class DME_AH_CurrencyItem : DME_AH_CurrencyAdapter
 {
@@ -26,7 +27,7 @@ class DME_AH_CurrencyItem : DME_AH_CurrencyAdapter
 
 	override int GetBalance(string playerUID)
 	{
-		PlayerBase player = GetPlayerByUID(playerUID);
+		Man player = GetPlayerByUID(playerUID);
 		if (!player)
 			return 0;
 
@@ -38,7 +39,7 @@ class DME_AH_CurrencyItem : DME_AH_CurrencyAdapter
 		if (amount <= 0)
 			return false;
 
-		PlayerBase player = GetPlayerByUID(playerUID);
+		Man player = GetPlayerByUID(playerUID);
 		if (!player)
 			return false;
 
@@ -54,14 +55,14 @@ class DME_AH_CurrencyItem : DME_AH_CurrencyAdapter
 		if (amount <= 0)
 			return false;
 
-		PlayerBase player = GetPlayerByUID(playerUID);
+		Man player = GetPlayerByUID(playerUID);
 		if (!player)
 			return false;
 
 		return SpawnItemsToInventory(player, m_ItemClassName, amount);
 	}
 
-	protected PlayerBase GetPlayerByUID(string playerUID)
+	protected Man GetPlayerByUID(string playerUID)
 	{
 		if (!g_Game)
 			return null;
@@ -74,19 +75,16 @@ class DME_AH_CurrencyItem : DME_AH_CurrencyAdapter
 			Man man = players[i];
 			if (!man)
 				continue;
-			PlayerBase player = PlayerBase.Cast(man);
-			if (!player)
-				continue;
-			PlayerIdentity identity = player.GetIdentity();
+			PlayerIdentity identity = man.GetIdentity();
 			if (!identity)
 				continue;
 			if (identity.GetPlainId() == playerUID)
-				return player;
+				return man;
 		}
 		return null;
 	}
 
-	protected int CountItemsInInventory(PlayerBase player, string className)
+	protected int CountItemsInInventory(Man player, string className)
 	{
 		if (!player)
 			return 0;
@@ -104,7 +102,7 @@ class DME_AH_CurrencyItem : DME_AH_CurrencyAdapter
 		return count;
 	}
 
-	protected bool RemoveItemsFromInventory(PlayerBase player, string className, int amount)
+	protected bool RemoveItemsFromInventory(Man player, string className, int amount)
 	{
 		if (!player || amount <= 0)
 			return false;
@@ -120,14 +118,15 @@ class DME_AH_CurrencyItem : DME_AH_CurrencyAdapter
 			EntityAI item = items[i];
 			if (item && item.GetType() == className)
 			{
-				g_Game.ObjectDelete(item);
+				if (g_Game)
+					g_Game.ObjectDelete(item);
 				removed++;
 			}
 		}
 		return removed >= amount;
 	}
 
-	protected bool SpawnItemsToInventory(PlayerBase player, string className, int amount)
+	protected bool SpawnItemsToInventory(Man player, string className, int amount)
 	{
 		if (!player || amount <= 0)
 			return false;
@@ -137,7 +136,7 @@ class DME_AH_CurrencyItem : DME_AH_CurrencyAdapter
 			EntityAI item = player.GetInventory().CreateInInventory(className);
 			if (!item)
 			{
-				DME_AH_Logger.Warning("CurrencyItem: Could not spawn item " + className + " to player inventory");
+				DME_AH_Logger.Warning("CurrencyItem: Could not spawn " + className);
 				return false;
 			}
 		}

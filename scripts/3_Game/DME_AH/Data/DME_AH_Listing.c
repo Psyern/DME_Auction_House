@@ -81,7 +81,7 @@ class DME_AH_Listing
 	{
 		if (!g_Game)
 			return false;
-		int currentTime = CF_Date.Now(true).GetTimestamp();
+		int currentTime = DME_AH_Util.GetTimestamp();
 		return currentTime >= ExpiresTimestamp;
 	}
 
@@ -89,7 +89,7 @@ class DME_AH_Listing
 	{
 		if (!g_Game)
 			return "N/A";
-		int currentTime = CF_Date.Now(true).GetTimestamp();
+		int currentTime = DME_AH_Util.GetTimestamp();
 		int remaining = ExpiresTimestamp - currentTime;
 		if (remaining <= 0)
 			return "Abgelaufen";
@@ -104,7 +104,7 @@ class DME_AH_Listing
 	{
 		int timestamp = 0;
 		if (g_Game)
-			timestamp = CF_Date.Now(true).GetTimestamp();
+			timestamp = DME_AH_Util.GetTimestamp();
 		int random = Math.RandomInt(10000, 99999);
 		return timestamp.ToString() + "_" + random.ToString();
 	}

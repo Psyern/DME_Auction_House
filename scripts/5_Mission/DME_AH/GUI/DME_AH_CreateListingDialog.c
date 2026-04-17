@@ -5,9 +5,9 @@ class DME_AH_CreateListingDialog : UIScriptedMenu
 	protected TextListboxWidget m_LstInventory;
 	protected ItemPreviewWidget m_ItemPreview;
 	protected TextWidget m_TxtSelectedItem;
-	protected XComboBoxWidgetClass m_ComboListingType;
-	protected XComboBoxWidgetClass m_ComboCategoryCreate;
-	protected XComboBoxWidgetClass m_ComboDuration;
+	protected XComboBoxWidget m_ComboListingType;
+	protected XComboBoxWidget m_ComboCategoryCreate;
+	protected XComboBoxWidget m_ComboDuration;
 	protected EditBoxWidget m_EditStartPrice;
 	protected EditBoxWidget m_EditBuyNowPrice;
 	protected TextWidget m_TxtFeeInfo;
@@ -34,9 +34,9 @@ class DME_AH_CreateListingDialog : UIScriptedMenu
 		m_LstInventory = TextListboxWidget.Cast(layoutRoot.FindAnyWidget("lstInventory"));
 		m_ItemPreview = ItemPreviewWidget.Cast(layoutRoot.FindAnyWidget("itemPreviewCreate"));
 		m_TxtSelectedItem = TextWidget.Cast(layoutRoot.FindAnyWidget("txtSelectedItem"));
-		m_ComboListingType = XComboBoxWidgetClass.Cast(layoutRoot.FindAnyWidget("comboListingType"));
-		m_ComboCategoryCreate = XComboBoxWidgetClass.Cast(layoutRoot.FindAnyWidget("comboCategoryCreate"));
-		m_ComboDuration = XComboBoxWidgetClass.Cast(layoutRoot.FindAnyWidget("comboDuration"));
+		m_ComboListingType = XComboBoxWidget.Cast(layoutRoot.FindAnyWidget("comboListingType"));
+		m_ComboCategoryCreate = XComboBoxWidget.Cast(layoutRoot.FindAnyWidget("comboCategoryCreate"));
+		m_ComboDuration = XComboBoxWidget.Cast(layoutRoot.FindAnyWidget("comboDuration"));
 		m_EditStartPrice = EditBoxWidget.Cast(layoutRoot.FindAnyWidget("editStartPrice"));
 		m_EditBuyNowPrice = EditBoxWidget.Cast(layoutRoot.FindAnyWidget("editBuyNowPrice"));
 		m_TxtFeeInfo = TextWidget.Cast(layoutRoot.FindAnyWidget("txtFeeInfo"));

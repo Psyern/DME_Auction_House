@@ -1,7 +1,36 @@
 // DME Auction House - Main Auction Menu (UIScriptedMenu)
 
+class DME_AH_AuctionMenuListener : DME_AH_RPCListener
+{
+	ref DME_AH_AuctionMenu m_Menu;
+
+	void DME_AH_AuctionMenuListener(DME_AH_AuctionMenu menu)
+	{
+		m_Menu = menu;
+	}
+
+	override void OnReceiveListings(string data, int totalPages, int page)
+	{
+		if (m_Menu)
+			m_Menu.OnReceiveListings(data, totalPages, page);
+	}
+
+	override void OnReceiveBalance(int balance)
+	{
+		if (m_Menu)
+			m_Menu.OnReceiveBalance(balance);
+	}
+
+	override void OnReceiveCallback(int resultCode, string data)
+	{
+		if (m_Menu)
+			m_Menu.OnReceiveCallback(resultCode, data);
+	}
+}
+
 class DME_AH_AuctionMenu : UIScriptedMenu
 {
+	protected ref DME_AH_AuctionMenuListener m_RPCListener;
 	// Tab buttons
 	protected ButtonWidget m_BtnTabMarketplace;
 	protected ButtonWidget m_BtnTabMyListings;
@@ -14,7 +43,7 @@ class DME_AH_AuctionMenu : UIScriptedMenu
 
 	// Filter bar
 	protected EditBoxWidget m_EditSearch;
-	protected XComboBoxWidgetClass m_ComboCategory;
+	protected XComboBoxWidget m_ComboCategory;
 	protected ButtonWidget m_BtnSortPrice;
 	protected ButtonWidget m_BtnSortName;
 	protected ButtonWidget m_BtnSortTime;
@@ -77,7 +106,7 @@ class DME_AH_AuctionMenu : UIScriptedMenu
 
 		// Filter bar
 		m_EditSearch = EditBoxWidget.Cast(layoutRoot.FindAnyWidget("editSearch"));
-		m_ComboCategory = XComboBoxWidgetClass.Cast(layoutRoot.FindAnyWidget("comboCategory"));
+		m_ComboCategory = XComboBoxWidget.Cast(layoutRoot.FindAnyWidget("comboCategory"));
 		m_BtnSortPrice = ButtonWidget.Cast(layoutRoot.FindAnyWidget("btnSortPrice"));
 		m_BtnSortName = ButtonWidget.Cast(layoutRoot.FindAnyWidget("btnSortName"));
 		m_BtnSortTime = ButtonWidget.Cast(layoutRoot.FindAnyWidget("btnSortTime"));
@@ -104,6 +133,10 @@ class DME_AH_AuctionMenu : UIScriptedMenu
 
 		PopulateCategoryCombo();
 		UpdateTabHighlight();
+
+		m_RPCListener = new DME_AH_AuctionMenuListener(this);
+		DME_AH_RPCQueue.SetListener(m_RPCListener);
+
 		RequestListings();
 		RequestBalance();
 
@@ -399,10 +432,10 @@ class DME_AH_AuctionMenu : UIScriptedMenu
 		g_Game.GetUIManager().ShowScriptedMenu(dialog, null);
 	}
 
-	// --- RPC Sending ---
+	// --- RPC Sending (Native ScriptRPC) ---
 	void RequestListings()
 	{
-		if (!GetRPCManager())
+		if (!g_Game)
 			return;
 
 		int categoryID = 0;
@@ -413,64 +446,81 @@ class DME_AH_AuctionMenu : UIScriptedMenu
 		if (m_EditSearch)
 			searchText = m_EditSearch.GetText();
 
-		Param4<int, string, int, int> data = new Param4<int, string, int, int>(categoryID, searchText, m_CurrentSortMode, m_CurrentPage);
-		GetRPCManager().SendRPC("DME_AH_RPCHandler", "RPC_RequestListings", data, true);
+		ScriptRPC rpc = new ScriptRPC();
+		rpc.Write(categoryID);
+		rpc.Write(searchText);
+		rpc.Write(m_CurrentSortMode);
+		rpc.Write(m_CurrentPage);
+		rpc.Send(g_Game.GetPlayer(), EDME_AH_RPC.DME_AH_RPC_REQUEST_LISTINGS, true, null);
 	}
 
 	void RequestMyListings()
 	{
-		if (!GetRPCManager())
+		if (!g_Game)
 			return;
-		Param1<int> data = new Param1<int>(0);
-		GetRPCManager().SendRPC("DME_AH_RPCHandler", "RPC_RequestMyListings", data, true);
+		ScriptRPC rpc = new ScriptRPC();
+		rpc.Write(0);
+		rpc.Send(g_Game.GetPlayer(), EDME_AH_RPC.DME_AH_RPC_REQUEST_MY_LISTINGS, true, null);
 	}
 
 	void RequestMyBids()
 	{
-		if (!GetRPCManager())
+		if (!g_Game)
 			return;
-		Param1<int> data = new Param1<int>(0);
-		GetRPCManager().SendRPC("DME_AH_RPCHandler", "RPC_RequestMyBids", data, true);
+		ScriptRPC rpc = new ScriptRPC();
+		rpc.Write(0);
+		rpc.Send(g_Game.GetPlayer(), EDME_AH_RPC.DME_AH_RPC_REQUEST_MY_BIDS, true, null);
 	}
 
 	void RequestBalance()
 	{
-		if (!GetRPCManager())
+		if (!g_Game)
 			return;
-		Param1<int> data = new Param1<int>(0);
-		GetRPCManager().SendRPC("DME_AH_RPCHandler", "RPC_RequestBalance", data, true);
+		ScriptRPC rpc = new ScriptRPC();
+		rpc.Write(0);
+		rpc.Send(g_Game.GetPlayer(), EDME_AH_RPC.DME_AH_RPC_REQUEST_BALANCE, true, null);
 	}
 
 	void SendCreateListing(string itemClassName, int listingType, int startPrice, int buyNowPrice, int durationMinutes, int categoryID)
 	{
-		if (!GetRPCManager())
+		if (!g_Game)
 			return;
-		Param6<string, int, int, int, int, int> data = new Param6<string, int, int, int, int, int>(itemClassName, listingType, startPrice, buyNowPrice, durationMinutes, categoryID);
-		GetRPCManager().SendRPC("DME_AH_RPCHandler", "RPC_CreateListing", data, true);
+		ScriptRPC rpc = new ScriptRPC();
+		rpc.Write(itemClassName);
+		rpc.Write(listingType);
+		rpc.Write(startPrice);
+		rpc.Write(buyNowPrice);
+		rpc.Write(durationMinutes);
+		rpc.Write(categoryID);
+		rpc.Send(g_Game.GetPlayer(), EDME_AH_RPC.DME_AH_RPC_CREATE_LISTING, true, null);
 	}
 
 	void SendBuyNow(string listingID)
 	{
-		if (!GetRPCManager())
+		if (!g_Game)
 			return;
-		Param1<string> data = new Param1<string>(listingID);
-		GetRPCManager().SendRPC("DME_AH_RPCHandler", "RPC_BuyNow", data, true);
+		ScriptRPC rpc = new ScriptRPC();
+		rpc.Write(listingID);
+		rpc.Send(g_Game.GetPlayer(), EDME_AH_RPC.DME_AH_RPC_BUY_NOW, true, null);
 	}
 
 	void SendPlaceBid(string listingID, int bidAmount)
 	{
-		if (!GetRPCManager())
+		if (!g_Game)
 			return;
-		Param2<string, int> data = new Param2<string, int>(listingID, bidAmount);
-		GetRPCManager().SendRPC("DME_AH_RPCHandler", "RPC_PlaceBid", data, true);
+		ScriptRPC rpc = new ScriptRPC();
+		rpc.Write(listingID);
+		rpc.Write(bidAmount);
+		rpc.Send(g_Game.GetPlayer(), EDME_AH_RPC.DME_AH_RPC_PLACE_BID, true, null);
 	}
 
 	void SendCancelListing(string listingID)
 	{
-		if (!GetRPCManager())
+		if (!g_Game)
 			return;
-		Param1<string> data = new Param1<string>(listingID);
-		GetRPCManager().SendRPC("DME_AH_RPCHandler", "RPC_CancelListing", data, true);
+		ScriptRPC rpc = new ScriptRPC();
+		rpc.Write(listingID);
+		rpc.Send(g_Game.GetPlayer(), EDME_AH_RPC.DME_AH_RPC_CANCEL_LISTING, true, null);
 	}
 
 	// --- RPC Response Handlers ---

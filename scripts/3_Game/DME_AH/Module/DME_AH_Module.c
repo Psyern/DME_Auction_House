@@ -1,6 +1,7 @@
-// DME Auction House - Main Module (CF_ModuleWorld)
+// DME Auction House - Main Module (Standalone Singleton)
+// No CF compile-time dependency - uses native DayZ patterns
 
-class DME_AH_Module : CF_ModuleWorld
+class DME_AH_Module
 {
 	protected ref DME_AH_Config m_Config;
 	protected ref DME_AH_CategoryConfig m_CategoryConfig;
@@ -8,23 +9,34 @@ class DME_AH_Module : CF_ModuleWorld
 	protected ref DME_AH_AuctionManager m_AuctionManager;
 	protected ref DME_AH_CurrencyAdapter m_CurrencyAdapter;
 	protected ref DME_AH_RPCHandler m_RPCHandler;
+	protected bool m_Initialized;
 
 	static ref DME_AH_Module s_Instance;
 
 	static DME_AH_Module GetInstance()
 	{
+		if (!s_Instance)
+			s_Instance = new DME_AH_Module();
 		return s_Instance;
 	}
 
-	override void OnInit()
+	void DME_AH_Module()
 	{
-		super.OnInit();
+		m_Initialized = false;
+	}
+
+	void Init()
+	{
+		if (m_Initialized)
+			return;
+
+		m_Initialized = true;
 		s_Instance = this;
 
 		DME_AH_Logger.Info("DME Auction House v" + DME_AH_VERSION + " initializing...");
 
 		m_Config = DME_AH_Config.Load();
-		DME_AH_Logger.SetLogLevel(m_Config.LogLevel);
+		DME_AH_Logger.SetLogLevel(m_Config.DebugLogLevel);
 		DME_AH_Logger.Info("Config loaded (CurrencyType: " + m_Config.CurrencyType + ")");
 
 		m_CategoryConfig = DME_AH_CategoryConfig.Load();
@@ -45,9 +57,13 @@ class DME_AH_Module : CF_ModuleWorld
 
 		m_RPCHandler = new DME_AH_RPCHandler();
 		m_RPCHandler.Init(m_AuctionManager, m_Config, m_DataStore, m_CurrencyAdapter, m_CategoryConfig);
-		m_RPCHandler.RegisterRPCs();
 
-		EnableUpdate();
+		// Schedule update loop on server
+		if (g_Game && g_Game.IsDedicatedServer())
+		{
+			g_Game.GetCallQueue(CALL_CATEGORY_SYSTEM).CallLater(OnUpdate, 1000, true);
+		}
+
 		DME_AH_Logger.Info("DME Auction House initialized successfully");
 	}
 
@@ -76,32 +92,22 @@ class DME_AH_Module : CF_ModuleWorld
 		}
 	}
 
-	override void OnUpdate(float timeslice)
+	void OnUpdate()
 	{
-		super.OnUpdate(timeslice);
-
 		if (!g_Game)
 			return;
 
 		if (g_Game.IsDedicatedServer())
 		{
 			if (m_AuctionManager)
-				m_AuctionManager.Update(timeslice);
+				m_AuctionManager.Update(1.0);
 			if (m_DataStore)
-				m_DataStore.Update(timeslice);
+				m_DataStore.Update(1.0);
 		}
 	}
 
-	override void OnMissionStart()
+	void OnMissionFinish()
 	{
-		super.OnMissionStart();
-		DME_AH_Logger.Info("Mission started");
-	}
-
-	override void OnMissionFinish()
-	{
-		super.OnMissionFinish();
-
 		if (g_Game && g_Game.IsDedicatedServer() && m_DataStore)
 		{
 			m_DataStore.SaveAll();

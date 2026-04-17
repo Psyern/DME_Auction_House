@@ -65,7 +65,7 @@ class DME_AH_AuctionManager
 				return EDME_AH_ResultCode.FailedServerError;
 		}
 
-		int currentTime = CF_Date.Now(true).GetTimestamp();
+		int currentTime = DME_AH_Util.GetTimestamp();
 		int expiresTime = currentTime + (durationMinutes * 60);
 
 		DME_AH_Listing listing = new DME_AH_Listing();
@@ -133,7 +133,7 @@ class DME_AH_AuctionManager
 			pickup.PlayerUID = listing.SellerUID;
 			pickup.Amount = sellerReceives;
 			pickup.Type = EDME_AH_TransactionType.BuyNow;
-			pickup.Timestamp = CF_Date.Now(true).GetTimestamp();
+			pickup.Timestamp = DME_AH_Util.GetTimestamp();
 			m_DataStore.AddPendingPickup(pickup);
 		}
 
@@ -153,7 +153,7 @@ class DME_AH_AuctionManager
 		transaction.ItemDisplayName = listing.ItemDisplayName;
 		transaction.FinalPrice = price;
 		transaction.Fee = saleFee;
-		transaction.Timestamp = CF_Date.Now(true).GetTimestamp();
+		transaction.Timestamp = DME_AH_Util.GetTimestamp();
 		transaction.Type = EDME_AH_TransactionType.BuyNow;
 
 		m_DataStore.AddTransaction(transaction);
@@ -237,7 +237,7 @@ class DME_AH_AuctionManager
 		transaction.SellerName = listing.SellerName;
 		transaction.ItemClassName = listing.ItemClassName;
 		transaction.ItemDisplayName = listing.ItemDisplayName;
-		transaction.Timestamp = CF_Date.Now(true).GetTimestamp();
+		transaction.Timestamp = DME_AH_Util.GetTimestamp();
 		transaction.Type = EDME_AH_TransactionType.Cancelled;
 
 		m_DataStore.AddTransaction(transaction);
@@ -254,7 +254,7 @@ class DME_AH_AuctionManager
 			return;
 
 		array<ref DME_AH_Listing> listings = m_DataStore.GetActiveListings();
-		int currentTime = CF_Date.Now(true).GetTimestamp();
+		int currentTime = DME_AH_Util.GetTimestamp();
 
 		for (int i = listings.Count() - 1; i >= 0; i--)
 		{
@@ -289,7 +289,7 @@ class DME_AH_AuctionManager
 			pickup.PlayerUID = listing.SellerUID;
 			pickup.Amount = sellerReceives;
 			pickup.Type = EDME_AH_TransactionType.AuctionWon;
-			pickup.Timestamp = CF_Date.Now(true).GetTimestamp();
+			pickup.Timestamp = DME_AH_Util.GetTimestamp();
 			m_DataStore.AddPendingPickup(pickup);
 		}
 
@@ -306,7 +306,7 @@ class DME_AH_AuctionManager
 		transaction.ItemDisplayName = listing.ItemDisplayName;
 		transaction.FinalPrice = listing.CurrentBid;
 		transaction.Fee = saleFee;
-		transaction.Timestamp = CF_Date.Now(true).GetTimestamp();
+		transaction.Timestamp = DME_AH_Util.GetTimestamp();
 		transaction.Type = EDME_AH_TransactionType.AuctionWon;
 
 		m_DataStore.AddTransaction(transaction);
@@ -329,7 +329,7 @@ class DME_AH_AuctionManager
 		transaction.SellerName = listing.SellerName;
 		transaction.ItemClassName = listing.ItemClassName;
 		transaction.ItemDisplayName = listing.ItemDisplayName;
-		transaction.Timestamp = CF_Date.Now(true).GetTimestamp();
+		transaction.Timestamp = DME_AH_Util.GetTimestamp();
 		transaction.Type = EDME_AH_TransactionType.Expired;
 
 		m_DataStore.AddTransaction(transaction);
@@ -353,7 +353,7 @@ class DME_AH_AuctionManager
 			pickup.PendingID = "REFUND_" + listing.ListingID + "_" + listing.CurrentBidderUID;
 			pickup.PlayerUID = listing.CurrentBidderUID;
 			pickup.Amount = listing.CurrentBid;
-			pickup.Timestamp = CF_Date.Now(true).GetTimestamp();
+			pickup.Timestamp = DME_AH_Util.GetTimestamp();
 			m_DataStore.AddPendingPickup(pickup);
 		}
 
@@ -370,7 +370,7 @@ class DME_AH_AuctionManager
 		array<ref DME_AH_Listing> filtered = new array<ref DME_AH_Listing>;
 
 		string searchLower = searchText;
-		searchLower = searchLower.ToLower();
+		searchLower.ToLower();
 
 		for (int i = 0; i < allListings.Count(); i++)
 		{
@@ -384,7 +384,7 @@ class DME_AH_AuctionManager
 			if (searchLower != "")
 			{
 				string itemNameLower = listing.ItemDisplayName;
-				itemNameLower = itemNameLower.ToLower();
+				itemNameLower.ToLower();
 				if (itemNameLower.IndexOf(searchLower) == -1)
 					continue;
 			}
@@ -417,7 +417,7 @@ class DME_AH_AuctionManager
 		int count = 0;
 
 		string searchLower = searchText;
-		searchLower = searchLower.ToLower();
+		searchLower.ToLower();
 
 		for (int i = 0; i < allListings.Count(); i++)
 		{
@@ -429,7 +429,7 @@ class DME_AH_AuctionManager
 			if (searchLower != "")
 			{
 				string itemNameLower = listing.ItemDisplayName;
-				itemNameLower = itemNameLower.ToLower();
+				itemNameLower.ToLower();
 				if (itemNameLower.IndexOf(searchLower) == -1)
 					continue;
 			}
