@@ -131,7 +131,7 @@ All settings auto-generate on first run in `$profile:DME_AH/Config/`.
     "AutoSaveIntervalSeconds": 300,
     "MaxHistoryEntries": 500,
     "NotificationsEnabled": true,
-    "LogLevel": 1
+    "DebugLogLevel": 3
 }
 ```
 
@@ -142,7 +142,7 @@ All settings auto-generate on first run in `$profile:DME_AH/Config/`.
 | `AllowedDurations` | Available durations in minutes (360=6h, 1440=24h, etc.) |
 | `MinBidIncrementPercent` | Minimum bid increase as % of current bid |
 | `AutoSaveIntervalSeconds` | How often data is auto-saved (also saves on every transaction) |
-| `LogLevel` | 0=None, 1=Error, 2=Warning, 3=Info, 4=Debug |
+| `DebugLogLevel` | 0=None, 1=Error, 2=Warning, 3=Info (default), 4=Debug |
 
 </details>
 

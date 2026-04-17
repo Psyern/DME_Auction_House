@@ -19,7 +19,7 @@ class DME_AH_Config
 	int AutoSaveIntervalSeconds = 300;
 	int MaxHistoryEntries = 500;
 	bool NotificationsEnabled = true;
-	int DebugLogLevel = 1;
+	int DebugLogLevel = 3;
 
 	void DME_AH_Config()
 	{

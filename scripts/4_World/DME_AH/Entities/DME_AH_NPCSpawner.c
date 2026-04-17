@@ -88,11 +88,50 @@ class DME_AH_NPCSpawner
 
 	static bool IsAuctionNPC(Object obj)
 	{
-		if (!obj || !s_AuctionNPCSet)
+		if (!obj)
 			return false;
-		int idx = s_AuctionNPCSet.Find(obj);
-		if (idx != -1)
-			return true;
+
+		// Server-side: check registry (fast)
+		if (s_AuctionNPCSet)
+		{
+			int idx = s_AuctionNPCSet.Find(obj);
+			if (idx != -1)
+				return true;
+		}
+
+		// Client+Server: check if this entity's classname matches any configured NPC
+		DME_AH_Module module = DME_AH_Module.GetInstance();
+		if (!module)
+			return false;
+
+		DME_AH_NPCConfig npcConfig = module.GetNPCConfig();
+		if (!npcConfig || !npcConfig.NPCs)
+			return false;
+
+		string objType = obj.GetType();
+		vector objPos = obj.GetPosition();
+
+		for (int i = 0; i < npcConfig.NPCs.Count(); i++)
+		{
+			DME_AH_NPCEntry entry = npcConfig.NPCs[i];
+			if (!entry || !entry.Active)
+				continue;
+
+			// Must be same classname
+			if (entry.ClassName != objType)
+				continue;
+
+			// Check horizontal distance only (ignore Y differences)
+			vector npcPos = entry.GetPositionVector();
+			float dx = objPos[0] - npcPos[0];
+			float dz = objPos[2] - npcPos[2];
+			float distSq = (dx * dx) + (dz * dz);
+
+			// Within 10m horizontal = match
+			if (distSq < 100.0)
+				return true;
+		}
+
 		return false;
 	}
 
