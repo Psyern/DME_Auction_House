@@ -1,0 +1,18 @@
+# Superpowers brainstorming sessions
+.superpowers/
+
+# Claude Code settings (local)
+.claude/settings.local.json
+
+# DayZ build outputs
+*.pbo
+*.bisign
+
+# OS files
+Thumbs.db
+.DS_Store
+
+# IDE
+.vscode/
+*.swp
+*.swo

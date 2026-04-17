@@ -1,0 +1,752 @@
+PanelWidgetClass RootPanel {
+ position 0 0
+ size 1 1
+ hexactpos 0
+ vexactpos 0
+ hexactsize 0
+ vexactsize 0
+ color 0 0 0 0.85
+ {
+  PanelWidgetClass MainFrame {
+   position 0.05 0.03
+   size 0.9 0.94
+   hexactpos 0
+   vexactpos 0
+   hexactsize 0
+   vexactsize 0
+   color 0.05 0.05 0.05 0.97
+   style DayZDefaultPanel
+   {
+    TextWidgetClass txtTitle {
+     position 0.02 0.01
+     size 0.3 0.04
+     hexactpos 0
+     vexactpos 0
+     hexactsize 0
+     vexactsize 0
+     font "gui/fonts/metron24bold"
+     color 1 0.5 0 1
+     text "DME AUCTION HOUSE"
+     "text halign" left
+     "text valign" center
+     "exact text" 1
+    }
+    TextWidgetClass txtBalance {
+     position 0.7 0.01
+     size 0.28 0.04
+     hexactpos 0
+     vexactpos 0
+     hexactsize 0
+     vexactsize 0
+     font "gui/fonts/metron16bold"
+     color 0 0.8 0 1
+     text "Balance: 0"
+     "text halign" right
+     "text valign" center
+     "exact text" 1
+    }
+    ButtonWidgetClass btnClose {
+     position 0.96 0.005
+     size 0.035 0.04
+     hexactpos 0
+     vexactpos 0
+     hexactsize 0
+     vexactsize 0
+     style Editor
+     "no focus" 1
+     {
+      TextWidgetClass txtCloseLabel {
+       position 0 0
+       size 1 1
+       hexactpos 0
+       vexactpos 0
+       hexactsize 0
+       vexactsize 0
+       font "gui/fonts/metron16bold"
+       color 0.8 0 0 1
+       text "X"
+       "text halign" center
+       "text valign" center
+       "exact text" 1
+      }
+     }
+    }
+    PanelWidgetClass TabBar {
+     position 0.02 0.055
+     size 0.96 0.045
+     hexactpos 0
+     vexactpos 0
+     hexactsize 0
+     vexactsize 0
+     {
+      ButtonWidgetClass btnTabMarketplace {
+       position 0 0
+       size 0.24 1
+       hexactpos 0
+       vexactpos 0
+       hexactsize 0
+       vexactsize 0
+       style Editor
+       "no focus" 1
+       {
+        TextWidgetClass txtTabMarketplace {
+         position 0 0
+         size 1 1
+         hexactpos 0
+         vexactpos 0
+         hexactsize 0
+         vexactsize 0
+         font "gui/fonts/metron16bold"
+         color 1 0.5 0 1
+         text "Marketplace"
+         "text halign" center
+         "text valign" center
+         "exact text" 1
+        }
+       }
+      }
+      ButtonWidgetClass btnTabMyListings {
+       position 0.25 0
+       size 0.24 1
+       hexactpos 0
+       vexactpos 0
+       hexactsize 0
+       vexactsize 0
+       style Editor
+       "no focus" 1
+       {
+        TextWidgetClass txtTabMyListings {
+         position 0 0
+         size 1 1
+         hexactpos 0
+         vexactpos 0
+         hexactsize 0
+         vexactsize 0
+         font "gui/fonts/metron16"
+         color 0.6 0.6 0.6 1
+         text "My Listings"
+         "text halign" center
+         "text valign" center
+         "exact text" 1
+        }
+       }
+      }
+      ButtonWidgetClass btnTabMyBids {
+       position 0.5 0
+       size 0.24 1
+       hexactpos 0
+       vexactpos 0
+       hexactsize 0
+       vexactsize 0
+       style Editor
+       "no focus" 1
+       {
+        TextWidgetClass txtTabMyBids {
+         position 0 0
+         size 1 1
+         hexactpos 0
+         vexactpos 0
+         hexactsize 0
+         vexactsize 0
+         font "gui/fonts/metron16"
+         color 0.6 0.6 0.6 1
+         text "My Bids"
+         "text halign" center
+         "text valign" center
+         "exact text" 1
+        }
+       }
+      }
+      ButtonWidgetClass btnTabSellItem {
+       position 0.75 0
+       size 0.24 1
+       hexactpos 0
+       vexactpos 0
+       hexactsize 0
+       vexactsize 0
+       style Editor
+       "no focus" 1
+       {
+        TextWidgetClass txtTabSellItem {
+         position 0 0
+         size 1 1
+         hexactpos 0
+         vexactpos 0
+         hexactsize 0
+         vexactsize 0
+         font "gui/fonts/metron16"
+         color 0.6 0.6 0.6 1
+         text "Sell Item"
+         "text halign" center
+         "text valign" center
+         "exact text" 1
+        }
+       }
+      }
+     }
+    }
+    PanelWidgetClass FilterBar {
+     position 0.02 0.11
+     size 0.96 0.045
+     hexactpos 0
+     vexactpos 0
+     hexactsize 0
+     vexactsize 0
+     {
+      EditBoxWidgetClass editSearch {
+       position 0 0
+       size 0.35 1
+       hexactpos 0
+       vexactpos 0
+       hexactsize 0
+       vexactsize 0
+       style Default
+       font "gui/fonts/metron14"
+       color 0.8 0.8 0.8 1
+       text ""
+      }
+      XComboBoxWidgetClass comboCategory {
+       position 0.36 0
+       size 0.2 1
+       hexactpos 0
+       vexactpos 0
+       hexactsize 0
+       vexactsize 0
+       style Default
+       font "gui/fonts/metron14"
+      }
+      ButtonWidgetClass btnSortPrice {
+       position 0.57 0
+       size 0.12 1
+       hexactpos 0
+       vexactpos 0
+       hexactsize 0
+       vexactsize 0
+       style Editor
+       "no focus" 1
+       {
+        TextWidgetClass txtSortPrice {
+         position 0 0
+         size 1 1
+         hexactpos 0
+         vexactpos 0
+         hexactsize 0
+         vexactsize 0
+         font "gui/fonts/metron14"
+         color 0.8 0.8 0.8 1
+         text "Price"
+         "text halign" center
+         "text valign" center
+         "exact text" 1
+        }
+       }
+      }
+      ButtonWidgetClass btnSortName {
+       position 0.7 0
+       size 0.12 1
+       hexactpos 0
+       vexactpos 0
+       hexactsize 0
+       vexactsize 0
+       style Editor
+       "no focus" 1
+       {
+        TextWidgetClass txtSortName {
+         position 0 0
+         size 1 1
+         hexactpos 0
+         vexactpos 0
+         hexactsize 0
+         vexactsize 0
+         font "gui/fonts/metron14"
+         color 0.8 0.8 0.8 1
+         text "Name"
+         "text halign" center
+         "text valign" center
+         "exact text" 1
+        }
+       }
+      }
+      ButtonWidgetClass btnSortTime {
+       position 0.83 0
+       size 0.12 1
+       hexactpos 0
+       vexactpos 0
+       hexactsize 0
+       vexactsize 0
+       style Editor
+       "no focus" 1
+       {
+        TextWidgetClass txtSortTime {
+         position 0 0
+         size 1 1
+         hexactpos 0
+         vexactpos 0
+         hexactsize 0
+         vexactsize 0
+         font "gui/fonts/metron14"
+         color 0.8 0.8 0.8 1
+         text "Time"
+         "text halign" center
+         "text valign" center
+         "exact text" 1
+        }
+       }
+      }
+     }
+    }
+    PanelWidgetClass ListHeader {
+     position 0.02 0.165
+     size 0.7 0.035
+     hexactpos 0
+     vexactpos 0
+     hexactsize 0
+     vexactsize 0
+     color 0.08 0.08 0.08 1
+     {
+      TextWidgetClass txtHeaderItem {
+       position 0 0
+       size 0.3 1
+       hexactpos 0
+       vexactpos 0
+       hexactsize 0
+       vexactsize 0
+       font "gui/fonts/metron14bold"
+       color 1 0.5 0 1
+       text "  Item"
+       "text halign" left
+       "text valign" center
+       "exact text" 1
+      }
+      TextWidgetClass txtHeaderPrice {
+       position 0.3 0
+       size 0.15 1
+       hexactpos 0
+       vexactpos 0
+       hexactsize 0
+       vexactsize 0
+       font "gui/fonts/metron14bold"
+       color 1 0.5 0 1
+       text "Price"
+       "text halign" center
+       "text valign" center
+       "exact text" 1
+      }
+      TextWidgetClass txtHeaderType {
+       position 0.45 0
+       size 0.15 1
+       hexactpos 0
+       vexactpos 0
+       hexactsize 0
+       vexactsize 0
+       font "gui/fonts/metron14bold"
+       color 1 0.5 0 1
+       text "Type"
+       "text halign" center
+       "text valign" center
+       "exact text" 1
+      }
+      TextWidgetClass txtHeaderSeller {
+       position 0.6 0
+       size 0.2 1
+       hexactpos 0
+       vexactpos 0
+       hexactsize 0
+       vexactsize 0
+       font "gui/fonts/metron14bold"
+       color 1 0.5 0 1
+       text "Seller"
+       "text halign" center
+       "text valign" center
+       "exact text" 1
+      }
+      TextWidgetClass txtHeaderTime {
+       position 0.8 0
+       size 0.2 1
+       hexactpos 0
+       vexactpos 0
+       hexactsize 0
+       vexactsize 0
+       font "gui/fonts/metron14bold"
+       color 1 0.5 0 1
+       text "Time Left"
+       "text halign" center
+       "text valign" center
+       "exact text" 1
+      }
+     }
+    }
+    PanelWidgetClass ListContainer {
+     position 0.02 0.2
+     size 0.7 0.74
+     hexactpos 0
+     vexactpos 0
+     hexactsize 0
+     vexactsize 0
+     color 0.03 0.03 0.03 0.9
+     {
+      TextListboxWidgetClass lstListings {
+       position 0 0
+       size 1 1
+       hexactpos 0
+       vexactpos 0
+       hexactsize 0
+       vexactsize 0
+       style Default
+       font "gui/fonts/metron14"
+       color 0.8 0.8 0.8 1
+      }
+     }
+    }
+    PanelWidgetClass DetailPanel {
+     position 0.73 0.165
+     size 0.25 0.775
+     hexactpos 0
+     vexactpos 0
+     hexactsize 0
+     vexactsize 0
+     color 0.06 0.06 0.06 0.95
+     visible 0
+     {
+      TextWidgetClass txtDetailTitle {
+       position 0.03 0.01
+       size 0.94 0.04
+       hexactpos 0
+       vexactpos 0
+       hexactsize 0
+       vexactsize 0
+       font "gui/fonts/metron16bold"
+       color 1 1 1 1
+       text "Item Name"
+       "text halign" left
+       "text valign" center
+       "exact text" 1
+      }
+      ItemPreviewWidgetClass itemPreview {
+       position 0.05 0.06
+       size 0.9 0.3
+       hexactpos 0
+       vexactpos 0
+       hexactsize 0
+       vexactsize 0
+      }
+      TextWidgetClass txtDetailSeller {
+       position 0.03 0.37
+       size 0.94 0.035
+       hexactpos 0
+       vexactpos 0
+       hexactsize 0
+       vexactsize 0
+       font "gui/fonts/metron14"
+       color 0.6 0.6 0.6 1
+       text "Seller: Unknown"
+       "text halign" left
+       "text valign" center
+       "exact text" 1
+      }
+      TextWidgetClass txtDetailType {
+       position 0.03 0.41
+       size 0.94 0.035
+       hexactpos 0
+       vexactpos 0
+       hexactsize 0
+       vexactsize 0
+       font "gui/fonts/metron14"
+       color 0.2 0.6 0.8 1
+       text "Type: Buy Now"
+       "text halign" left
+       "text valign" center
+       "exact text" 1
+      }
+      TextWidgetClass txtDetailPrice {
+       position 0.03 0.45
+       size 0.94 0.04
+       hexactpos 0
+       vexactpos 0
+       hexactsize 0
+       vexactsize 0
+       font "gui/fonts/metron16bold"
+       color 0 0.8 0 1
+       text "Price: 0"
+       "text halign" left
+       "text valign" center
+       "exact text" 1
+      }
+      TextWidgetClass txtDetailBuyNow {
+       position 0.03 0.495
+       size 0.94 0.035
+       hexactpos 0
+       vexactpos 0
+       hexactsize 0
+       vexactsize 0
+       font "gui/fonts/metron14"
+       color 1 0.5 0 1
+       text ""
+       "text halign" left
+       "text valign" center
+       "exact text" 1
+      }
+      TextWidgetClass txtDetailBids {
+       position 0.03 0.535
+       size 0.94 0.035
+       hexactpos 0
+       vexactpos 0
+       hexactsize 0
+       vexactsize 0
+       font "gui/fonts/metron14"
+       color 0.8 0.8 0.8 1
+       text "Bids: 0"
+       "text halign" left
+       "text valign" center
+       "exact text" 1
+      }
+      TextWidgetClass txtDetailTime {
+       position 0.03 0.575
+       size 0.94 0.035
+       hexactpos 0
+       vexactpos 0
+       hexactsize 0
+       vexactsize 0
+       font "gui/fonts/metron14"
+       color 0.8 0.6 0 1
+       text "Time: 0h 0m"
+       "text halign" left
+       "text valign" center
+       "exact text" 1
+      }
+      PanelWidgetClass BidSection {
+       position 0.03 0.63
+       size 0.94 0.06
+       hexactpos 0
+       vexactpos 0
+       hexactsize 0
+       vexactsize 0
+       visible 0
+       {
+        EditBoxWidgetClass editBidAmount {
+         position 0 0
+         size 0.55 1
+         hexactpos 0
+         vexactpos 0
+         hexactsize 0
+         vexactsize 0
+         style Default
+         font "gui/fonts/metron14"
+         color 0.8 0.8 0.8 1
+        }
+        ButtonWidgetClass btnPlaceBid {
+         position 0.6 0
+         size 0.4 1
+         hexactpos 0
+         vexactpos 0
+         hexactsize 0
+         vexactsize 0
+         style Editor
+         "no focus" 1
+         {
+          TextWidgetClass txtPlaceBid {
+           position 0 0
+           size 1 1
+           hexactpos 0
+           vexactpos 0
+           hexactsize 0
+           vexactsize 0
+           font "gui/fonts/metron14bold"
+           color 1 0.5 0 1
+           text "PLACE BID"
+           "text halign" center
+           "text valign" center
+           "exact text" 1
+          }
+         }
+        }
+       }
+      }
+      ButtonWidgetClass btnBuyNow {
+       position 0.03 0.71
+       size 0.94 0.07
+       hexactpos 0
+       vexactpos 0
+       hexactsize 0
+       vexactsize 0
+       style Editor
+       "no focus" 1
+       visible 0
+       {
+        TextWidgetClass txtBuyNow {
+         position 0 0
+         size 1 1
+         hexactpos 0
+         vexactpos 0
+         hexactsize 0
+         vexactsize 0
+         font "gui/fonts/metron16bold"
+         color 0 0.8 0 1
+         text "BUY NOW"
+         "text halign" center
+         "text valign" center
+         "exact text" 1
+        }
+       }
+      }
+      ButtonWidgetClass btnCancelListing {
+       position 0.03 0.8
+       size 0.94 0.06
+       hexactpos 0
+       vexactpos 0
+       hexactsize 0
+       vexactsize 0
+       style Editor
+       "no focus" 1
+       visible 0
+       {
+        TextWidgetClass txtCancelListing {
+         position 0 0
+         size 1 1
+         hexactpos 0
+         vexactpos 0
+         hexactsize 0
+         vexactsize 0
+         font "gui/fonts/metron14bold"
+         color 0.8 0 0 1
+         text "CANCEL LISTING"
+         "text halign" center
+         "text valign" center
+         "exact text" 1
+        }
+       }
+      }
+      ButtonWidgetClass btnCloseDetail {
+       position 0.03 0.9
+       size 0.94 0.06
+       hexactpos 0
+       vexactpos 0
+       hexactsize 0
+       vexactsize 0
+       style Editor
+       "no focus" 1
+       {
+        TextWidgetClass txtCloseDetail {
+         position 0 0
+         size 1 1
+         hexactpos 0
+         vexactpos 0
+         hexactsize 0
+         vexactsize 0
+         font "gui/fonts/metron14"
+         color 0.6 0.6 0.6 1
+         text "Close"
+         "text halign" center
+         "text valign" center
+         "exact text" 1
+        }
+       }
+      }
+     }
+    }
+    PanelWidgetClass BottomBar {
+     position 0.02 0.95
+     size 0.96 0.04
+     hexactpos 0
+     vexactpos 0
+     hexactsize 0
+     vexactsize 0
+     {
+      TextWidgetClass txtPageInfo {
+       position 0.35 0
+       size 0.3 1
+       hexactpos 0
+       vexactpos 0
+       hexactsize 0
+       vexactsize 0
+       font "gui/fonts/metron14"
+       color 0.6 0.6 0.6 1
+       text "Page 1/1"
+       "text halign" center
+       "text valign" center
+       "exact text" 1
+      }
+      ButtonWidgetClass btnPrevPage {
+       position 0.25 0
+       size 0.08 1
+       hexactpos 0
+       vexactpos 0
+       hexactsize 0
+       vexactsize 0
+       style Editor
+       "no focus" 1
+       {
+        TextWidgetClass txtPrevPage {
+         position 0 0
+         size 1 1
+         hexactpos 0
+         vexactpos 0
+         hexactsize 0
+         vexactsize 0
+         font "gui/fonts/metron14"
+         color 0.8 0.8 0.8 1
+         text "<"
+         "text halign" center
+         "text valign" center
+         "exact text" 1
+        }
+       }
+      }
+      ButtonWidgetClass btnNextPage {
+       position 0.67 0
+       size 0.08 1
+       hexactpos 0
+       vexactpos 0
+       hexactsize 0
+       vexactsize 0
+       style Editor
+       "no focus" 1
+       {
+        TextWidgetClass txtNextPage {
+         position 0 0
+         size 1 1
+         hexactpos 0
+         vexactpos 0
+         hexactsize 0
+         vexactsize 0
+         font "gui/fonts/metron14"
+         color 0.8 0.8 0.8 1
+         text ">"
+         "text halign" center
+         "text valign" center
+         "exact text" 1
+        }
+       }
+      }
+     }
+    }
+    PanelWidgetClass LoadingOverlay {
+     position 0 0
+     size 1 1
+     hexactpos 0
+     vexactpos 0
+     hexactsize 0
+     vexactsize 0
+     color 0 0 0 0.7
+     visible 0
+     {
+      TextWidgetClass txtLoading {
+       position 0.3 0.45
+       size 0.4 0.1
+       hexactpos 0
+       vexactpos 0
+       hexactsize 0
+       vexactsize 0
+       font "gui/fonts/metron24bold"
+       color 1 0.5 0 1
+       text "Loading..."
+       "text halign" center
+       "text valign" center
+       "exact text" 1
+      }
+     }
+    }
+   }
+  }
+ }
+}

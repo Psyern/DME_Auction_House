@@ -1,0 +1,293 @@
+PanelWidgetClass CreateListingRoot {
+ position 0 0
+ size 1 1
+ hexactpos 0
+ vexactpos 0
+ hexactsize 0
+ vexactsize 0
+ color 0 0 0 0.6
+ {
+  PanelWidgetClass CreateListingFrame {
+   position 0.2 0.1
+   size 0.6 0.8
+   hexactpos 0
+   vexactpos 0
+   hexactsize 0
+   vexactsize 0
+   color 0.05 0.05 0.05 0.97
+   style DayZDefaultPanel
+   {
+    TextWidgetClass txtCreateTitle {
+     position 0.03 0.015
+     size 0.94 0.05
+     hexactpos 0
+     vexactpos 0
+     hexactsize 0
+     vexactsize 0
+     font "gui/fonts/metron16bold"
+     color 1 0.5 0 1
+     text "CREATE LISTING"
+     "text halign" center
+     "text valign" center
+     "exact text" 1
+    }
+    PanelWidgetClass InventorySection {
+     position 0.03 0.08
+     size 0.45 0.75
+     hexactpos 0
+     vexactpos 0
+     hexactsize 0
+     vexactsize 0
+     color 0.03 0.03 0.03 0.9
+     {
+      TextWidgetClass txtInventoryLabel {
+       position 0.02 0.01
+       size 0.96 0.04
+       hexactpos 0
+       vexactpos 0
+       hexactsize 0
+       vexactsize 0
+       font "gui/fonts/metron14bold"
+       color 1 0.5 0 1
+       text "Your Inventory"
+       "text halign" left
+       "text valign" center
+       "exact text" 1
+      }
+      TextListboxWidgetClass lstInventory {
+       position 0.02 0.06
+       size 0.96 0.93
+       hexactpos 0
+       vexactpos 0
+       hexactsize 0
+       vexactsize 0
+       style Default
+       font "gui/fonts/metron14"
+       color 0.8 0.8 0.8 1
+      }
+     }
+    }
+    PanelWidgetClass SettingsSection {
+     position 0.5 0.08
+     size 0.47 0.75
+     hexactpos 0
+     vexactpos 0
+     hexactsize 0
+     vexactsize 0
+     {
+      ItemPreviewWidgetClass itemPreviewCreate {
+       position 0.05 0
+       size 0.9 0.25
+       hexactpos 0
+       vexactpos 0
+       hexactsize 0
+       vexactsize 0
+      }
+      TextWidgetClass txtSelectedItem {
+       position 0 0.26
+       size 1 0.04
+       hexactpos 0
+       vexactpos 0
+       hexactsize 0
+       vexactsize 0
+       font "gui/fonts/metron16bold"
+       color 1 1 1 1
+       text "Select an item"
+       "text halign" center
+       "text valign" center
+       "exact text" 1
+      }
+      TextWidgetClass lblListingType {
+       position 0 0.32
+       size 0.4 0.04
+       hexactpos 0
+       vexactpos 0
+       hexactsize 0
+       vexactsize 0
+       font "gui/fonts/metron14"
+       color 0.6 0.6 0.6 1
+       text "Listing Type:"
+       "text halign" left
+       "text valign" center
+       "exact text" 1
+      }
+      XComboBoxWidgetClass comboListingType {
+       position 0.42 0.32
+       size 0.58 0.04
+       hexactpos 0
+       vexactpos 0
+       hexactsize 0
+       vexactsize 0
+       style Default
+       font "gui/fonts/metron14"
+      }
+      TextWidgetClass lblCategory {
+       position 0 0.38
+       size 0.4 0.04
+       hexactpos 0
+       vexactpos 0
+       hexactsize 0
+       vexactsize 0
+       font "gui/fonts/metron14"
+       color 0.6 0.6 0.6 1
+       text "Category:"
+       "text halign" left
+       "text valign" center
+       "exact text" 1
+      }
+      XComboBoxWidgetClass comboCategoryCreate {
+       position 0.42 0.38
+       size 0.58 0.04
+       hexactpos 0
+       vexactpos 0
+       hexactsize 0
+       vexactsize 0
+       style Default
+       font "gui/fonts/metron14"
+      }
+      TextWidgetClass lblStartPrice {
+       position 0 0.44
+       size 0.4 0.04
+       hexactpos 0
+       vexactpos 0
+       hexactsize 0
+       vexactsize 0
+       font "gui/fonts/metron14"
+       color 0.6 0.6 0.6 1
+       text "Start Price:"
+       "text halign" left
+       "text valign" center
+       "exact text" 1
+      }
+      EditBoxWidgetClass editStartPrice {
+       position 0.42 0.44
+       size 0.58 0.04
+       hexactpos 0
+       vexactpos 0
+       hexactsize 0
+       vexactsize 0
+       style Default
+       font "gui/fonts/metron14"
+       color 0.8 0.8 0.8 1
+      }
+      TextWidgetClass lblBuyNowPrice {
+       position 0 0.5
+       size 0.4 0.04
+       hexactpos 0
+       vexactpos 0
+       hexactsize 0
+       vexactsize 0
+       font "gui/fonts/metron14"
+       color 0.6 0.6 0.6 1
+       text "Buy Now Price:"
+       "text halign" left
+       "text valign" center
+       "exact text" 1
+      }
+      EditBoxWidgetClass editBuyNowPrice {
+       position 0.42 0.5
+       size 0.58 0.04
+       hexactpos 0
+       vexactpos 0
+       hexactsize 0
+       vexactsize 0
+       style Default
+       font "gui/fonts/metron14"
+       color 0.8 0.8 0.8 1
+      }
+      TextWidgetClass lblDuration {
+       position 0 0.56
+       size 0.4 0.04
+       hexactpos 0
+       vexactpos 0
+       hexactsize 0
+       vexactsize 0
+       font "gui/fonts/metron14"
+       color 0.6 0.6 0.6 1
+       text "Duration:"
+       "text halign" left
+       "text valign" center
+       "exact text" 1
+      }
+      XComboBoxWidgetClass comboDuration {
+       position 0.42 0.56
+       size 0.58 0.04
+       hexactpos 0
+       vexactpos 0
+       hexactsize 0
+       vexactsize 0
+       style Default
+       font "gui/fonts/metron14"
+      }
+      TextWidgetClass txtFeeInfo {
+       position 0 0.64
+       size 1 0.04
+       hexactpos 0
+       vexactpos 0
+       hexactsize 0
+       vexactsize 0
+       font "gui/fonts/metron14"
+       color 0.8 0.6 0 1
+       text "Listing Fee: 0"
+       "text halign" center
+       "text valign" center
+       "exact text" 1
+      }
+      ButtonWidgetClass btnCreateListing {
+       position 0.05 0.72
+       size 0.9 0.08
+       hexactpos 0
+       vexactpos 0
+       hexactsize 0
+       vexactsize 0
+       style Editor
+       "no focus" 1
+       {
+        TextWidgetClass txtCreateListing {
+         position 0 0
+         size 1 1
+         hexactpos 0
+         vexactpos 0
+         hexactsize 0
+         vexactsize 0
+         font "gui/fonts/metron16bold"
+         color 0 0.8 0 1
+         text "CREATE LISTING"
+         "text halign" center
+         "text valign" center
+         "exact text" 1
+        }
+       }
+      }
+      ButtonWidgetClass btnCancelCreate {
+       position 0.05 0.82
+       size 0.9 0.06
+       hexactpos 0
+       vexactpos 0
+       hexactsize 0
+       vexactsize 0
+       style Editor
+       "no focus" 1
+       {
+        TextWidgetClass txtCancelCreate {
+         position 0 0
+         size 1 1
+         hexactpos 0
+         vexactpos 0
+         hexactsize 0
+         vexactsize 0
+         font "gui/fonts/metron14"
+         color 0.8 0 0 1
+         text "Cancel"
+         "text halign" center
+         "text valign" center
+         "exact text" 1
+        }
+       }
+      }
+     }
+    }
+   }
+  }
+ }
+}

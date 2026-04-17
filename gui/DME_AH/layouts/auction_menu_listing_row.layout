@@ -1,0 +1,81 @@
+PanelWidgetClass ListingRow {
+ position 0 0
+ size 1 0.05
+ hexactpos 0
+ vexactpos 0
+ hexactsize 0
+ vexactsize 0
+ color 0.06 0.06 0.06 0.8
+ {
+  TextWidgetClass txtRowItem {
+   position 0 0
+   size 0.3 1
+   hexactpos 0
+   vexactpos 0
+   hexactsize 0
+   vexactsize 0
+   font "gui/fonts/metron14"
+   color 0.8 0.8 0.8 1
+   text "Item Name"
+   "text halign" left
+   "text valign" center
+   "exact text" 1
+  }
+  TextWidgetClass txtRowPrice {
+   position 0.3 0
+   size 0.15 1
+   hexactpos 0
+   vexactpos 0
+   hexactsize 0
+   vexactsize 0
+   font "gui/fonts/metron14"
+   color 0 0.8 0 1
+   text "0"
+   "text halign" center
+   "text valign" center
+   "exact text" 1
+  }
+  TextWidgetClass txtRowType {
+   position 0.45 0
+   size 0.15 1
+   hexactpos 0
+   vexactpos 0
+   hexactsize 0
+   vexactsize 0
+   font "gui/fonts/metron14"
+   color 0.2 0.6 0.8 1
+   text "Buy Now"
+   "text halign" center
+   "text valign" center
+   "exact text" 1
+  }
+  TextWidgetClass txtRowSeller {
+   position 0.6 0
+   size 0.2 1
+   hexactpos 0
+   vexactpos 0
+   hexactsize 0
+   vexactsize 0
+   font "gui/fonts/metron14"
+   color 0.6 0.6 0.6 1
+   text "Player"
+   "text halign" center
+   "text valign" center
+   "exact text" 1
+  }
+  TextWidgetClass txtRowTime {
+   position 0.8 0
+   size 0.2 1
+   hexactpos 0
+   vexactpos 0
+   hexactsize 0
+   vexactsize 0
+   font "gui/fonts/metron14"
+   color 0.8 0.6 0 1
+   text "0h 0m"
+   "text halign" center
+   "text valign" center
+   "exact text" 1
+  }
+ }
+}
