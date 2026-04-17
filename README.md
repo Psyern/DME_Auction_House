@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="data/dme_auctionhouse_banner.png" alt="DME Auction House" width="800">
+  <img src="data/Banner.png" alt="DME Auction House" width="800">
 </p>
 
 <p align="center">
