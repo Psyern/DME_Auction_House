@@ -27,7 +27,6 @@ class CfgMods
 			{
 				value = "";
 				files[] = {
-					"DME_Auction_House/scripts/Common",
 					"DME_Auction_House/scripts/3_Game"
 				};
 			};
@@ -35,7 +34,6 @@ class CfgMods
 			{
 				value = "";
 				files[] = {
-					"DME_Auction_House/scripts/Common",
 					"DME_Auction_House/scripts/4_World"
 				};
 			};
@@ -43,7 +41,6 @@ class CfgMods
 			{
 				value = "";
 				files[] = {
-					"DME_Auction_House/scripts/Common",
 					"DME_Auction_House/scripts/5_Mission"
 				};
 			};
