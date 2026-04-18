@@ -91,7 +91,7 @@ class DME_AH_NPCSpawner
 		if (!obj)
 			return false;
 
-		// Server-side: check registry (fast)
+		// Server-side: check registry (fast, always reliable)
 		if (s_AuctionNPCSet)
 		{
 			int idx = s_AuctionNPCSet.Find(obj);
@@ -99,40 +99,20 @@ class DME_AH_NPCSpawner
 				return true;
 		}
 
-		// Client+Server: check if this entity's classname matches any configured NPC
-		DME_AH_Module module = DME_AH_Module.GetInstance();
-		if (!module)
+		// Client+Server fallback: a SurvivorBase without PlayerIdentity is a spawned NPC
+		SurvivorBase survivor = SurvivorBase.Cast(obj);
+		if (!survivor)
 			return false;
 
-		DME_AH_NPCConfig npcConfig = module.GetNPCConfig();
-		if (!npcConfig || !npcConfig.NPCs)
+		// Real players always have identity, spawned NPCs never do
+		if (survivor.GetIdentity())
 			return false;
 
-		string objType = obj.GetType();
-		vector objPos = obj.GetPosition();
+		// Verify it's not a zombie or infected (they also have no identity)
+		if (obj.IsInherited(ZombieBase))
+			return false;
 
-		for (int i = 0; i < npcConfig.NPCs.Count(); i++)
-		{
-			DME_AH_NPCEntry entry = npcConfig.NPCs[i];
-			if (!entry || !entry.Active)
-				continue;
-
-			// Must be same classname
-			if (entry.ClassName != objType)
-				continue;
-
-			// Check horizontal distance only (ignore Y differences)
-			vector npcPos = entry.GetPositionVector();
-			float dx = objPos[0] - npcPos[0];
-			float dz = objPos[2] - npcPos[2];
-			float distSq = (dx * dx) + (dz * dz);
-
-			// Within 10m horizontal = match
-			if (distSq < 100.0)
-				return true;
-		}
-
-		return false;
+		return true;
 	}
 
 	static void DespawnAll()

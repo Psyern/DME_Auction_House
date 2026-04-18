@@ -2,11 +2,17 @@ class CfgPatches
 {
 	class DME_AH_Scripts
 	{
-		units[] = {};
+		units[] = {"DME_AH_AuctionNPC"};
 		weapons[] = {};
 		requiredVersion = 0.1;
 		requiredAddons[] = {"DZ_Data"};
 	};
+};
+
+class CfgVehicles
+{
+	class SurvivorBase;
+	class DME_AH_AuctionNPC : SurvivorBase {};
 };
 
 class CfgMods

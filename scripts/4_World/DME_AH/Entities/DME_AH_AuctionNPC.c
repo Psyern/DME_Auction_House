@@ -1,12 +1,12 @@
-// DME Auction House - Auction NPC (Placeable Trader NPC)
-// Invincible, non-lootable, non-targetable by AI
+// DME Auction House - Auction NPC
+// Registered in CfgVehicles, invincible, non-lootable
 
 class DME_AH_AuctionNPC : SurvivorBase
 {
-	override void SetActions()
+	override void SetActions(out TInputActionMap InputActionMap)
 	{
-		super.SetActions();
-		AddAction(DME_AH_ActionOpenAuction);
+		super.SetActions(InputActionMap);
+		AddAction(DME_AH_ActionOpenAuction, InputActionMap);
 	}
 
 	override bool IsInventoryVisible()

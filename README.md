@@ -95,14 +95,60 @@ The auction house supports three currency modes, configurable per server:
 
 ## Access Points
 
-Players interact with the auction house through placeable objects:
+Players interact with the auction house through placeable objects or JSON-configured NPCs.
+
+### Option 1: NPCs.json (Recommended)
+
+Configure NPCs in `$profile:DME_AH/Config/NPCs.json`. NPCs spawn automatically at server start. Any DayZ survivor model can be used.
+
+<details>
+<summary><b>NPCs.json</b> (click to expand)</summary>
+
+```json
+{
+    "NPCs": [
+        {
+            "ID": 1,
+            "ClassName": "SurvivorF_Eva",
+            "Position": [6575.0, 0.0, 2685.0],
+            "Orientation": [135.0, 0.0, 0.0],
+            "DisplayName": "Auction House",
+            "Loadout": [
+                "GorkaEJacket_Autumn",
+                "GorkaEPants_Autumn",
+                "MilitaryBoots_Black"
+            ],
+            "Active": true
+        }
+    ]
+}
+```
+
+| Field | Description |
+|-------|-------------|
+| `ID` | Unique identifier for logging (admin reference only) |
+| `ClassName` | Any DayZ survivor class: `SurvivorF_Eva`, `SurvivorM_Boris`, `SurvivorF_Linda`, etc. |
+| `Position` | `[x, y, z]` coordinates. Set `y` to `0` to auto-snap to ground height. |
+| `Orientation` | `[yaw, pitch, roll]` in degrees. Yaw: 0=North, 90=East, 180=South, 270=West. |
+| `DisplayName` | Name shown in server logs when NPC spawns |
+| `Loadout` | Array of item classnames for clothing/gear. Auto-applied to correct body slots. |
+| `Active` | `true` = spawn this NPC, `false` = skip without deleting the entry |
+
+**Available Survivor Models:**
+`SurvivorF_Eva`, `SurvivorF_Frida`, `SurvivorF_Gabi`, `SurvivorF_Helga`, `SurvivorF_Irena`, `SurvivorF_Judy`, `SurvivorF_Keiko`, `SurvivorF_Linda`, `SurvivorF_Maria`, `SurvivorF_Naomi`, `SurvivorM_Boris`, `SurvivorM_Cyril`, `SurvivorM_Denis`, `SurvivorM_Elias`, `SurvivorM_Francis`, `SurvivorM_Guo`, `SurvivorM_Hassan`, `SurvivorM_Indar`, `SurvivorM_Jose`, `SurvivorM_Kaito`, `SurvivorM_Lewis`, `SurvivorM_Manua`, `SurvivorM_Mirek`, `SurvivorM_Niki`, `SurvivorM_Oliver`, `SurvivorM_Peter`, `SurvivorM_Quinn`, `SurvivorM_Rolf`, `SurvivorM_Seth`, `SurvivorM_Taiki`
+
+</details>
+
+### Option 2: Manual Placement
+
+Place these objects via admin tools (e.g. Expansion Object Spawner, CFTools):
 
 | Type | Class | Description |
 |------|-------|-------------|
-| **Terminal** | `DME_AH_AuctionTerminal` | Static object (desk, computer, kiosk). Place via admin tools. |
-| **NPC** | `DME_AH_AuctionNPC` | Trader NPC. Non-hostile, non-lootable. Place via Expansion or admin tools. |
+| **Terminal** | `DME_AH_AuctionTerminal` | Static object. Requires model in CfgVehicles. |
+| **NPC** | `DME_AH_AuctionNPC` | Invincible trader NPC. Non-lootable. |
 
-Both open the same auction menu via the `DME_AH_ActionOpenAuction` interact action.
+Both options open the same auction menu via the interact action (F key).
 
 ---
 

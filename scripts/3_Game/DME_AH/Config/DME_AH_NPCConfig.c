@@ -14,7 +14,7 @@ class DME_AH_NPCEntry
 	void DME_AH_NPCEntry()
 	{
 		ID = 0;
-		ClassName = "SurvivorF_Eva";
+		ClassName = "DME_AH_AuctionNPC";
 		Position = new array<float>;
 		Position.Insert(0);
 		Position.Insert(0);

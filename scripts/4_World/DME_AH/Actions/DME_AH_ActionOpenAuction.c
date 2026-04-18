@@ -28,8 +28,6 @@ class DME_AH_ActionOpenAuction : ActionInteractBase
 			return true;
 		if (targetObject.IsInherited(DME_AH_AuctionNPC))
 			return true;
-		if (DME_AH_NPCSpawner.IsAuctionNPC(targetObject))
-			return true;
 
 		return false;
 	}
