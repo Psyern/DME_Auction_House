@@ -81,7 +81,10 @@ class DME_AH_Module
 				JsonFileLoader<DME_AH_NPCConfig>.JsonLoadFile(DME_AH_NPC_FILE, m_NPCConfig);
 		}
 
-		DME_AH_Logger.Info("DME Auction House initialized successfully (" + (isServer ? "server" : "client") + ")");
+		string sideStr = "client";
+		if (isServer)
+			sideStr = "server";
+		DME_AH_Logger.Info("DME Auction House initialized successfully (" + sideStr + ")");
 	}
 
 	protected void InitCurrencyAdapter()
