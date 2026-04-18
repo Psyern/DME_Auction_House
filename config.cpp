@@ -11,8 +11,8 @@ class CfgPatches
 
 class CfgVehicles
 {
-	class SurvivorBase;
-	class DME_AH_AuctionNPC : SurvivorBase {};
+	class SurvivorF_Eva;
+	class DME_AH_AuctionNPC : SurvivorF_Eva {};
 };
 
 class CfgMods

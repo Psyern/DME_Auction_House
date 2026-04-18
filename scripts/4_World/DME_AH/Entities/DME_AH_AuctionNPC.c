@@ -1,7 +1,7 @@
 // DME Auction House - Auction NPC
 // Registered in CfgVehicles, invincible, non-lootable
 
-class DME_AH_AuctionNPC : SurvivorBase
+class DME_AH_AuctionNPC : SurvivorF_Eva
 {
 	override void SetActions(out TInputActionMap InputActionMap)
 	{
