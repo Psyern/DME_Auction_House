@@ -27,7 +27,7 @@ class DME_AH_CreateListingDialog : UIScriptedMenu
 		if (!g_Game)
 			return null;
 
-		layoutRoot = g_Game.GetWorkspace().CreateWidgets("DME_AH/layouts/auction_menu_create_listing.layout");
+		layoutRoot = g_Game.GetWorkspace().CreateWidgets("DME_Auction_House/gui/DME_AH/layouts/auction_menu_create_listing.layout");
 		if (!layoutRoot)
 			return null;
 

@@ -31,7 +31,7 @@ class DME_AH_ConfirmDialog : UIScriptedMenu
 		if (!g_Game)
 			return null;
 
-		layoutRoot = g_Game.GetWorkspace().CreateWidgets("DME_AH/layouts/auction_menu_confirm_dialog.layout");
+		layoutRoot = g_Game.GetWorkspace().CreateWidgets("DME_Auction_House/gui/DME_AH/layouts/auction_menu_confirm_dialog.layout");
 		if (!layoutRoot)
 			return null;
 

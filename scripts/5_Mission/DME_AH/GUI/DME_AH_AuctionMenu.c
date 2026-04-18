@@ -90,7 +90,7 @@ class DME_AH_AuctionMenu : UIScriptedMenu
 		if (!g_Game)
 			return null;
 
-		layoutRoot = g_Game.GetWorkspace().CreateWidgets("DME_AH/layouts/auction_menu.layout");
+		layoutRoot = g_Game.GetWorkspace().CreateWidgets("DME_Auction_House/gui/DME_AH/layouts/auction_menu.layout");
 		if (!layoutRoot)
 			return null;
 
@@ -148,6 +148,8 @@ class DME_AH_AuctionMenu : UIScriptedMenu
 		super.OnShow();
 
 		if (!g_Game)
+			return;
+		if (!layoutRoot)
 			return;
 
 		PPEffects.SetBlurMenu(0.5);
