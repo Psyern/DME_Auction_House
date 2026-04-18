@@ -142,7 +142,17 @@ All settings auto-generate on first run in `$profile:DME_AH/Config/`.
 | `AllowedDurations` | Available durations in minutes (360=6h, 1440=24h, etc.) |
 | `MinBidIncrementPercent` | Minimum bid increase as % of current bid |
 | `AutoSaveIntervalSeconds` | How often data is auto-saved (also saves on every transaction) |
-| `DebugLogLevel` | 0=None, 1=Error, 2=Warning, 3=Info (default), 4=Debug |
+| `DebugLogLevel` | Controls log verbosity (see table below) |
+
+**DebugLogLevel Values:**
+
+| Level | Name | Description |
+|-------|------|-------------|
+| `0` | None | No log output at all. Use only when everything works and you want clean logs. |
+| `1` | Error | Only critical errors (e.g. failed to load config, RPC failed, NPC spawn failed). |
+| `2` | Warning | Errors + warnings (e.g. loadout item not found, currency fallback used). |
+| `3` | **Info** (default) | Errors + warnings + operational info (startup, NPC spawned, listing created, transactions). Recommended for normal operation. |
+| `4` | Debug | Everything including detailed debug output (every RPC call, action condition checks, bid refunds). Use for troubleshooting only - generates a lot of log output. |
 
 </details>
 
