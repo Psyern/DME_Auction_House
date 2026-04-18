@@ -34,41 +34,54 @@ class DME_AH_Module
 		m_Initialized = true;
 		s_Instance = this;
 
+		bool isServer = false;
+		if (g_Game)
+			isServer = g_Game.IsDedicatedServer();
+
 		DME_AH_Logger.Info("DME Auction House v" + DME_AH_VERSION + " initializing...");
 
-		m_Config = DME_AH_Config.Load();
-		DME_AH_Logger.SetLogLevel(m_Config.DebugLogLevel);
-		DME_AH_Logger.Info("Config loaded (CurrencyType: " + m_Config.CurrencyType + ")");
-
-		m_CategoryConfig = DME_AH_CategoryConfig.Load();
-		DME_AH_Logger.Info("Categories loaded (" + m_CategoryConfig.Categories.Count().ToString() + " categories)");
-
-		m_NPCConfig = DME_AH_NPCConfig.Load();
-		DME_AH_Logger.Info("NPC config loaded (" + m_NPCConfig.NPCs.Count().ToString() + " NPCs defined)");
-
-		m_DataStore = new DME_AH_DataStore();
-		m_DataStore.SetAutoSaveInterval(m_Config.AutoSaveIntervalSeconds);
-
-		InitCurrencyAdapter();
-
-		if (g_Game && g_Game.IsDedicatedServer())
+		// Server: full init with file I/O
+		if (isServer)
 		{
+			m_Config = DME_AH_Config.Load();
+			DME_AH_Logger.SetLogLevel(m_Config.DebugLogLevel);
+			DME_AH_Logger.Info("Config loaded (CurrencyType: " + m_Config.CurrencyType + ")");
+
+			m_CategoryConfig = DME_AH_CategoryConfig.Load();
+			DME_AH_Logger.Info("Categories loaded (" + m_CategoryConfig.Categories.Count().ToString() + " categories)");
+
+			m_NPCConfig = DME_AH_NPCConfig.Load();
+			DME_AH_Logger.Info("NPC config loaded (" + m_NPCConfig.NPCs.Count().ToString() + " NPCs defined)");
+
+			m_DataStore = new DME_AH_DataStore();
+			m_DataStore.SetAutoSaveInterval(m_Config.AutoSaveIntervalSeconds);
+
+			InitCurrencyAdapter();
+
 			m_DataStore.LoadAll();
-		}
 
-		m_AuctionManager = new DME_AH_AuctionManager();
-		m_AuctionManager.Init(m_Config, m_CategoryConfig, m_DataStore, m_CurrencyAdapter);
+			m_AuctionManager = new DME_AH_AuctionManager();
+			m_AuctionManager.Init(m_Config, m_CategoryConfig, m_DataStore, m_CurrencyAdapter);
 
-		m_RPCHandler = new DME_AH_RPCHandler();
-		m_RPCHandler.Init(m_AuctionManager, m_Config, m_DataStore, m_CurrencyAdapter, m_CategoryConfig);
+			m_RPCHandler = new DME_AH_RPCHandler();
+			m_RPCHandler.Init(m_AuctionManager, m_Config, m_DataStore, m_CurrencyAdapter, m_CategoryConfig);
 
-		// Schedule update loop on server
-		if (g_Game && g_Game.IsDedicatedServer())
-		{
 			g_Game.GetCallQueue(CALL_CATEGORY_SYSTEM).CallLater(OnUpdate, 1000, true);
 		}
+		else
+		{
+			// Client: only load NPC config for action detection (no file creation)
+			m_Config = new DME_AH_Config();
+			m_NPCConfig = new DME_AH_NPCConfig();
 
-		DME_AH_Logger.Info("DME Auction House initialized successfully");
+			if (FileExist(DME_AH_SETTINGS_FILE))
+				JsonFileLoader<DME_AH_Config>.JsonLoadFile(DME_AH_SETTINGS_FILE, m_Config);
+
+			if (FileExist(DME_AH_NPC_FILE))
+				JsonFileLoader<DME_AH_NPCConfig>.JsonLoadFile(DME_AH_NPC_FILE, m_NPCConfig);
+		}
+
+		DME_AH_Logger.Info("DME Auction House initialized successfully (" + (isServer ? "server" : "client") + ")");
 	}
 
 	protected void InitCurrencyAdapter()
