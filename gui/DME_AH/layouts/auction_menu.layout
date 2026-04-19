@@ -24,7 +24,7 @@ PanelWidgetClass RootPanel {
      vexactpos 0
      hexactsize 0
      vexactsize 0
-     font "gui/fonts/metron24bold"
+     font "gui/fonts/metron16bold"
      color 1 0.5 0 1
      text "DME AUCTION HOUSE"
      "text halign" left
@@ -201,7 +201,7 @@ PanelWidgetClass RootPanel {
        hexactsize 0
        vexactsize 0
        style Default
-       font "gui/fonts/metron14"
+       font "gui/fonts/metron16"
        color 0.8 0.8 0.8 1
        text ""
       }
@@ -213,7 +213,7 @@ PanelWidgetClass RootPanel {
        hexactsize 0
        vexactsize 0
        style Default
-       font "gui/fonts/metron14"
+       font "gui/fonts/metron16"
       }
       ButtonWidgetClass btnSortPrice {
        position 0.57 0
@@ -232,7 +232,7 @@ PanelWidgetClass RootPanel {
          vexactpos 0
          hexactsize 0
          vexactsize 0
-         font "gui/fonts/metron14"
+         font "gui/fonts/metron16"
          color 0.8 0.8 0.8 1
          text "Price"
          "text halign" center
@@ -258,7 +258,7 @@ PanelWidgetClass RootPanel {
          vexactpos 0
          hexactsize 0
          vexactsize 0
-         font "gui/fonts/metron14"
+         font "gui/fonts/metron16"
          color 0.8 0.8 0.8 1
          text "Name"
          "text halign" center
@@ -284,7 +284,7 @@ PanelWidgetClass RootPanel {
          vexactpos 0
          hexactsize 0
          vexactsize 0
-         font "gui/fonts/metron14"
+         font "gui/fonts/metron16"
          color 0.8 0.8 0.8 1
          text "Time"
          "text halign" center
@@ -311,7 +311,7 @@ PanelWidgetClass RootPanel {
        vexactpos 0
        hexactsize 0
        vexactsize 0
-       font "gui/fonts/metron14bold"
+       font "gui/fonts/metron16bold"
        color 1 0.5 0 1
        text "  Item"
        "text halign" left
@@ -325,7 +325,7 @@ PanelWidgetClass RootPanel {
        vexactpos 0
        hexactsize 0
        vexactsize 0
-       font "gui/fonts/metron14bold"
+       font "gui/fonts/metron16bold"
        color 1 0.5 0 1
        text "Price"
        "text halign" center
@@ -339,7 +339,7 @@ PanelWidgetClass RootPanel {
        vexactpos 0
        hexactsize 0
        vexactsize 0
-       font "gui/fonts/metron14bold"
+       font "gui/fonts/metron16bold"
        color 1 0.5 0 1
        text "Type"
        "text halign" center
@@ -353,7 +353,7 @@ PanelWidgetClass RootPanel {
        vexactpos 0
        hexactsize 0
        vexactsize 0
-       font "gui/fonts/metron14bold"
+       font "gui/fonts/metron16bold"
        color 1 0.5 0 1
        text "Seller"
        "text halign" center
@@ -367,7 +367,7 @@ PanelWidgetClass RootPanel {
        vexactpos 0
        hexactsize 0
        vexactsize 0
-       font "gui/fonts/metron14bold"
+       font "gui/fonts/metron16bold"
        color 1 0.5 0 1
        text "Time Left"
        "text halign" center
@@ -393,7 +393,7 @@ PanelWidgetClass RootPanel {
        hexactsize 0
        vexactsize 0
        style Default
-       font "gui/fonts/metron14"
+       font "gui/fonts/metron16"
        color 0.8 0.8 0.8 1
       }
      }
@@ -437,7 +437,7 @@ PanelWidgetClass RootPanel {
        vexactpos 0
        hexactsize 0
        vexactsize 0
-       font "gui/fonts/metron14"
+       font "gui/fonts/metron16"
        color 0.6 0.6 0.6 1
        text "Seller: Unknown"
        "text halign" left
@@ -451,7 +451,7 @@ PanelWidgetClass RootPanel {
        vexactpos 0
        hexactsize 0
        vexactsize 0
-       font "gui/fonts/metron14"
+       font "gui/fonts/metron16"
        color 0.2 0.6 0.8 1
        text "Type: Buy Now"
        "text halign" left
@@ -479,7 +479,7 @@ PanelWidgetClass RootPanel {
        vexactpos 0
        hexactsize 0
        vexactsize 0
-       font "gui/fonts/metron14"
+       font "gui/fonts/metron16"
        color 1 0.5 0 1
        text ""
        "text halign" left
@@ -493,7 +493,7 @@ PanelWidgetClass RootPanel {
        vexactpos 0
        hexactsize 0
        vexactsize 0
-       font "gui/fonts/metron14"
+       font "gui/fonts/metron16"
        color 0.8 0.8 0.8 1
        text "Bids: 0"
        "text halign" left
@@ -507,7 +507,7 @@ PanelWidgetClass RootPanel {
        vexactpos 0
        hexactsize 0
        vexactsize 0
-       font "gui/fonts/metron14"
+       font "gui/fonts/metron16"
        color 0.8 0.6 0 1
        text "Time: 0h 0m"
        "text halign" left
@@ -531,7 +531,7 @@ PanelWidgetClass RootPanel {
          hexactsize 0
          vexactsize 0
          style Default
-         font "gui/fonts/metron14"
+         font "gui/fonts/metron16"
          color 0.8 0.8 0.8 1
         }
         ButtonWidgetClass btnPlaceBid {
@@ -551,7 +551,7 @@ PanelWidgetClass RootPanel {
            vexactpos 0
            hexactsize 0
            vexactsize 0
-           font "gui/fonts/metron14bold"
+           font "gui/fonts/metron16bold"
            color 1 0.5 0 1
            text "PLACE BID"
            "text halign" center
@@ -607,7 +607,7 @@ PanelWidgetClass RootPanel {
          vexactpos 0
          hexactsize 0
          vexactsize 0
-         font "gui/fonts/metron14bold"
+         font "gui/fonts/metron16bold"
          color 0.8 0 0 1
          text "CANCEL LISTING"
          "text halign" center
@@ -633,7 +633,7 @@ PanelWidgetClass RootPanel {
          vexactpos 0
          hexactsize 0
          vexactsize 0
-         font "gui/fonts/metron14"
+         font "gui/fonts/metron16"
          color 0.6 0.6 0.6 1
          text "Close"
          "text halign" center
@@ -659,7 +659,7 @@ PanelWidgetClass RootPanel {
        vexactpos 0
        hexactsize 0
        vexactsize 0
-       font "gui/fonts/metron14"
+       font "gui/fonts/metron16"
        color 0.6 0.6 0.6 1
        text "Page 1/1"
        "text halign" center
@@ -683,7 +683,7 @@ PanelWidgetClass RootPanel {
          vexactpos 0
          hexactsize 0
          vexactsize 0
-         font "gui/fonts/metron14"
+         font "gui/fonts/metron16"
          color 0.8 0.8 0.8 1
          text "<"
          "text halign" center
@@ -709,7 +709,7 @@ PanelWidgetClass RootPanel {
          vexactpos 0
          hexactsize 0
          vexactsize 0
-         font "gui/fonts/metron14"
+         font "gui/fonts/metron16"
          color 0.8 0.8 0.8 1
          text ">"
          "text halign" center
@@ -737,7 +737,7 @@ PanelWidgetClass RootPanel {
        vexactpos 0
        hexactsize 0
        vexactsize 0
-       font "gui/fonts/metron24bold"
+       font "gui/fonts/metron16bold"
        color 1 0.5 0 1
        text "Loading..."
        "text halign" center

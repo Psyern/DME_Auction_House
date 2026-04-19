@@ -201,7 +201,7 @@ class DME_AH_AuctionMenu : UIScriptedMenu
 		}
 		if (w == m_BtnTabSellItem)
 		{
-			OpenCreateListingDialog();
+			SwitchTab(EDME_AH_MenuTab.SellItem);
 			return true;
 		}
 
@@ -245,7 +245,10 @@ class DME_AH_AuctionMenu : UIScriptedMenu
 		// Listing selection
 		if (w == m_LstListings)
 		{
-			OnListingSelected();
+			if (m_CurrentTab == EDME_AH_MenuTab.SellItem)
+				OnInventoryItemSelected();
+			else
+				OnListingSelected();
 			return true;
 		}
 
@@ -290,6 +293,8 @@ class DME_AH_AuctionMenu : UIScriptedMenu
 			RequestMyListings();
 		else if (tab == EDME_AH_MenuTab.MyBids)
 			RequestMyBids();
+		else if (tab == EDME_AH_MenuTab.SellItem)
+			PopulateInventoryList();
 	}
 
 	protected void UpdateTabHighlight()
@@ -419,16 +424,67 @@ class DME_AH_AuctionMenu : UIScriptedMenu
 		SendCancelListing(row.ListingID);
 	}
 
-	protected void OpenCreateListingDialog()
+	// --- Sell Item Tab ---
+	protected ref array<string> m_InventoryItemClasses;
+
+	protected void PopulateInventoryList()
 	{
+		if (!m_LstListings)
+			return;
 		if (!g_Game)
 			return;
-		if (g_Game.IsDedicatedServer())
+
+		m_LstListings.ClearItems();
+		m_ListingRows.Clear();
+
+		if (!m_InventoryItemClasses)
+			m_InventoryItemClasses = new array<string>;
+		m_InventoryItemClasses.Clear();
+
+		Man player = g_Game.GetPlayer();
+		if (!player)
 			return;
 
-		DME_AH_CreateListingDialog dialog = new DME_AH_CreateListingDialog();
-		dialog.SetParentMenu(this);
-		g_Game.GetUIManager().ShowScriptedMenu(dialog, null);
+		array<EntityAI> items = new array<EntityAI>;
+		player.GetInventory().EnumerateInventory(InventoryTraversalType.PREORDER, items);
+
+		for (int i = 0; i < items.Count(); i++)
+		{
+			EntityAI item = items[i];
+			if (!item)
+				continue;
+			if (item == player)
+				continue;
+
+			string displayName = item.GetDisplayName();
+			if (displayName == "")
+				displayName = item.GetType();
+
+			string className = item.GetType();
+			m_InventoryItemClasses.Insert(className);
+
+			string displayStr = displayName + "    (" + className + ")";
+			m_LstListings.AddItem(displayStr, null, 0);
+		}
+
+		UpdatePageInfo();
+	}
+
+	protected void OnInventoryItemSelected()
+	{
+		if (!m_LstListings || !m_InventoryItemClasses)
+			return;
+
+		int selectedRow = m_LstListings.GetSelectedRow();
+		if (selectedRow < 0 || selectedRow >= m_InventoryItemClasses.Count())
+			return;
+
+		string selectedClass = m_InventoryItemClasses[selectedRow];
+		DME_AH_Logger.Info("Selected inventory item: " + selectedClass);
+
+		// For now, create a simple buy-now listing with a default price
+		// TODO: Add price input in detail panel
+		SendCreateListing(selectedClass, EDME_AH_ListingType.BuyNow, 100, 0, 1440, 7);
 	}
 
 	// --- RPC Sending (Native ScriptRPC) ---
