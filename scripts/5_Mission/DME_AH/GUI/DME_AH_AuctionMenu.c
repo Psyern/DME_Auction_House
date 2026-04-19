@@ -36,11 +36,6 @@ class DME_AH_AuctionMenu : UIScriptedMenu
 	protected ButtonWidget m_BtnTabMyListings;
 	protected ButtonWidget m_BtnTabMyBids;
 	protected ButtonWidget m_BtnTabSellItem;
-	protected TextWidget m_TxtTabMarketplace;
-	protected TextWidget m_TxtTabMyListings;
-	protected TextWidget m_TxtTabMyBids;
-	protected TextWidget m_TxtTabSellItem;
-
 	// Filter bar
 	protected EditBoxWidget m_EditSearch;
 	protected XComboBoxWidget m_ComboCategory;
@@ -99,10 +94,6 @@ class DME_AH_AuctionMenu : UIScriptedMenu
 		m_BtnTabMyListings = ButtonWidget.Cast(layoutRoot.FindAnyWidget("btnTabMyListings"));
 		m_BtnTabMyBids = ButtonWidget.Cast(layoutRoot.FindAnyWidget("btnTabMyBids"));
 		m_BtnTabSellItem = ButtonWidget.Cast(layoutRoot.FindAnyWidget("btnTabSellItem"));
-		m_TxtTabMarketplace = TextWidget.Cast(layoutRoot.FindAnyWidget("txtTabMarketplace"));
-		m_TxtTabMyListings = TextWidget.Cast(layoutRoot.FindAnyWidget("txtTabMyListings"));
-		m_TxtTabMyBids = TextWidget.Cast(layoutRoot.FindAnyWidget("txtTabMyBids"));
-		m_TxtTabSellItem = TextWidget.Cast(layoutRoot.FindAnyWidget("txtTabSellItem"));
 
 		// Filter bar
 		m_EditSearch = EditBoxWidget.Cast(layoutRoot.FindAnyWidget("editSearch"));
@@ -302,29 +293,34 @@ class DME_AH_AuctionMenu : UIScriptedMenu
 		int activeColor = ARGB(255, 255, 128, 0);
 		int inactiveColor = ARGB(255, 153, 153, 153);
 
-		if (m_TxtTabMarketplace)
+		if (m_BtnTabMarketplace)
 		{
 			int mpColor = inactiveColor;
 			if (m_CurrentTab == EDME_AH_MenuTab.Marketplace)
 				mpColor = activeColor;
-			m_TxtTabMarketplace.SetColor(mpColor);
+			m_BtnTabMarketplace.SetTextColor(mpColor);
 		}
-		if (m_TxtTabMyListings)
+		if (m_BtnTabMyListings)
 		{
 			int mlColor = inactiveColor;
 			if (m_CurrentTab == EDME_AH_MenuTab.MyListings)
 				mlColor = activeColor;
-			m_TxtTabMyListings.SetColor(mlColor);
+			m_BtnTabMyListings.SetTextColor(mlColor);
 		}
-		if (m_TxtTabMyBids)
+		if (m_BtnTabMyBids)
 		{
 			int mbColor = inactiveColor;
 			if (m_CurrentTab == EDME_AH_MenuTab.MyBids)
 				mbColor = activeColor;
-			m_TxtTabMyBids.SetColor(mbColor);
+			m_BtnTabMyBids.SetTextColor(mbColor);
 		}
-		if (m_TxtTabSellItem)
-			m_TxtTabSellItem.SetColor(inactiveColor);
+		if (m_BtnTabSellItem)
+		{
+			int siColor = inactiveColor;
+			if (m_CurrentTab == EDME_AH_MenuTab.SellItem)
+				siColor = activeColor;
+			m_BtnTabSellItem.SetTextColor(siColor);
+		}
 	}
 
 	// --- Sorting ---
