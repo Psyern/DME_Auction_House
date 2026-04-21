@@ -8,6 +8,11 @@ class DME_AH_PendingPickup
 	int Amount;
 	int Type;
 	int Timestamp;
+	// Item snapshot (used when IsItem == true)
+	bool IsItem;
+	float ItemHealth;
+	float ItemQuantity;
+	int ItemLiquidType;
 
 	void DME_AH_PendingPickup()
 	{
@@ -17,6 +22,10 @@ class DME_AH_PendingPickup
 		Amount = 0;
 		Type = 0;
 		Timestamp = 0;
+		IsItem = false;
+		ItemHealth = -1;
+		ItemQuantity = -1;
+		ItemLiquidType = 0;
 	}
 }
 

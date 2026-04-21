@@ -17,6 +17,9 @@ class DME_AH_DetailPanel
 	protected EditBoxWidget m_EditBidAmount;
 
 	protected ref DME_AH_ListingRow m_CurrentRow;
+	// Client-only preview entity spawned to populate m_ItemPreview.
+	// Must be deleted in Hide() to avoid leaks.
+	protected EntityAI m_PreviewEntity;
 
 	void Init(Widget root)
 	{
@@ -45,6 +48,25 @@ class DME_AH_DetailPanel
 
 		m_CurrentRow = row;
 		m_Root.Show(true);
+
+		// Clean up any stale preview entity from a previous Show() that
+		// wasn't followed by a Hide() (e.g. user clicked row-to-row).
+		DestroyPreviewEntity();
+
+		if (m_ItemPreview && row.ItemClassName != "" && g_Game)
+		{
+			Object obj = g_Game.CreateObjectEx(row.ItemClassName, vector.Zero, ECE_LOCAL | ECE_NOLIFETIME);
+			EntityAI preview;
+			if (Class.CastTo(preview, obj))
+			{
+				m_PreviewEntity = preview;
+				m_ItemPreview.SetItem(preview);
+			}
+			else if (obj)
+			{
+				g_Game.ObjectDelete(obj);
+			}
+		}
 
 		if (m_TxtTitle)
 			m_TxtTitle.SetText(row.ItemName);
@@ -87,6 +109,16 @@ class DME_AH_DetailPanel
 		if (m_Root)
 			m_Root.Show(false);
 		m_CurrentRow = null;
+		DestroyPreviewEntity();
+	}
+
+	protected void DestroyPreviewEntity()
+	{
+		if (m_ItemPreview)
+			m_ItemPreview.SetItem(null);
+		if (m_PreviewEntity && g_Game)
+			g_Game.ObjectDelete(m_PreviewEntity);
+		m_PreviewEntity = null;
 	}
 
 	bool IsVisible()

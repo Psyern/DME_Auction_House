@@ -69,6 +69,8 @@ class DME_AH_AuctionMenu : UIScriptedMenu
 	protected int m_CurrentSortMode;
 	protected int m_PlayerBalance;
 	protected ref array<ref DME_AH_ListingRow> m_ListingRows;
+	// Maps category-combo index -> categoryID (index 0 == 0 == All)
+	protected ref array<int> m_CategoryComboIDs;
 
 	void DME_AH_AuctionMenu()
 	{
@@ -78,6 +80,7 @@ class DME_AH_AuctionMenu : UIScriptedMenu
 		m_CurrentSortMode = EDME_AH_SortMode.NewestFirst;
 		m_PlayerBalance = 0;
 		m_ListingRows = new array<ref DME_AH_ListingRow>;
+		m_CategoryComboIDs = new array<int>;
 	}
 
 	override Widget Init()
@@ -340,15 +343,58 @@ class DME_AH_AuctionMenu : UIScriptedMenu
 		if (!m_ComboCategory)
 			return;
 
+		m_CategoryComboIDs.Clear();
+
+		// Always keep "All Categories" at index 0 (category ID 0 == no filter)
 		m_ComboCategory.AddItem("All Categories");
-		m_ComboCategory.AddItem("Weapons");
-		m_ComboCategory.AddItem("Clothing");
-		m_ComboCategory.AddItem("Medical");
-		m_ComboCategory.AddItem("Food");
-		m_ComboCategory.AddItem("Vehicles");
-		m_ComboCategory.AddItem("Building");
-		m_ComboCategory.AddItem("Other");
+		m_CategoryComboIDs.Insert(0);
+
+		DME_AH_CategoryConfig catConfig;
+		DME_AH_Module module = DME_AH_Module.GetInstance();
+		if (module)
+			catConfig = module.GetCategoryConfig();
+
+		// Client may not have a config loaded — fall back to defaults so the
+		// combo still reflects the real category IDs.
+		if (!catConfig || !catConfig.Categories || catConfig.Categories.Count() == 0)
+		{
+			catConfig = new DME_AH_CategoryConfig();
+			catConfig.CreateDefaults();
+		}
+
+		for (int i = 0; i < catConfig.Categories.Count(); i++)
+		{
+			DME_AH_Category cat = catConfig.Categories[i];
+			if (!cat)
+				continue;
+			m_ComboCategory.AddItem(cat.DisplayName);
+			m_CategoryComboIDs.Insert(cat.CategoryID);
+		}
+
 		m_ComboCategory.SetCurrentItem(0);
+	}
+
+	protected int GetSelectedCategoryID()
+	{
+		if (!m_ComboCategory || !m_CategoryComboIDs)
+			return 0;
+		int idx = m_ComboCategory.GetCurrentItem();
+		if (idx < 0 || idx >= m_CategoryComboIDs.Count())
+			return 0;
+		return m_CategoryComboIDs[idx];
+	}
+
+	override bool OnChange(Widget w, int x, int y, bool finished)
+	{
+		super.OnChange(w, x, y, finished);
+
+		if (w == m_ComboCategory)
+		{
+			m_CurrentPage = 0;
+			RequestListings();
+			return true;
+		}
+		return false;
 	}
 
 	// --- Listing Selection ---
@@ -421,7 +467,7 @@ class DME_AH_AuctionMenu : UIScriptedMenu
 	}
 
 	// --- Sell Item Tab ---
-	protected ref array<string> m_InventoryItemClasses;
+	protected ref array<EntityAI> m_InventoryItems;
 
 	protected void PopulateInventoryList()
 	{
@@ -433,9 +479,9 @@ class DME_AH_AuctionMenu : UIScriptedMenu
 		m_LstListings.ClearItems();
 		m_ListingRows.Clear();
 
-		if (!m_InventoryItemClasses)
-			m_InventoryItemClasses = new array<string>;
-		m_InventoryItemClasses.Clear();
+		if (!m_InventoryItems)
+			m_InventoryItems = new array<EntityAI>;
+		m_InventoryItems.Clear();
 
 		Man player = g_Game.GetPlayer();
 		if (!player)
@@ -457,7 +503,7 @@ class DME_AH_AuctionMenu : UIScriptedMenu
 				displayName = item.GetType();
 
 			string className = item.GetType();
-			m_InventoryItemClasses.Insert(className);
+			m_InventoryItems.Insert(item);
 
 			string displayStr = displayName + "    (" + className + ")";
 			m_LstListings.AddItem(displayStr, null, 0);
@@ -468,19 +514,33 @@ class DME_AH_AuctionMenu : UIScriptedMenu
 
 	protected void OnInventoryItemSelected()
 	{
-		if (!m_LstListings || !m_InventoryItemClasses)
+		if (!m_LstListings || !m_InventoryItems)
 			return;
 
 		int selectedRow = m_LstListings.GetSelectedRow();
-		if (selectedRow < 0 || selectedRow >= m_InventoryItemClasses.Count())
+		if (selectedRow < 0 || selectedRow >= m_InventoryItems.Count())
 			return;
 
-		string selectedClass = m_InventoryItemClasses[selectedRow];
-		DME_AH_Logger.Info("Selected inventory item: " + selectedClass);
+		EntityAI selectedItem = m_InventoryItems[selectedRow];
+		if (!selectedItem)
+			return;
 
-		// For now, create a simple buy-now listing with a default price
-		// TODO: Add price input in detail panel
-		SendCreateListing(selectedClass, EDME_AH_ListingType.BuyNow, 100, 0, 1440, 7);
+		DME_AH_Logger.Info("Selected inventory item: " + selectedItem.GetType());
+
+		if (!g_Game)
+			return;
+		UIManager uiManager = g_Game.GetUIManager();
+		if (!uiManager)
+			return;
+
+		// Open the create-listing dialog; it will read prices + NetworkID itself.
+		UIScriptedMenu menu = uiManager.EnterScriptedMenu(MENU_DME_AH_CREATE_LISTING, null);
+		DME_AH_CreateListingDialog dialog;
+		if (Class.CastTo(dialog, menu))
+		{
+			dialog.SetParentMenu(this);
+			dialog.SetSelectedItem(selectedItem);
+		}
 	}
 
 	// --- RPC Sending (Native ScriptRPC) ---
@@ -489,9 +549,7 @@ class DME_AH_AuctionMenu : UIScriptedMenu
 		if (!g_Game)
 			return;
 
-		int categoryID = 0;
-		if (m_ComboCategory)
-			categoryID = m_ComboCategory.GetCurrentItem();
+		int categoryID = GetSelectedCategoryID();
 
 		string searchText = "";
 		if (m_EditSearch)
@@ -532,7 +590,7 @@ class DME_AH_AuctionMenu : UIScriptedMenu
 		rpc.Send(g_Game.GetPlayer(), EDME_AH_RPC.DME_AH_RPC_REQUEST_BALANCE, true, null);
 	}
 
-	void SendCreateListing(string itemClassName, int listingType, int startPrice, int buyNowPrice, int durationMinutes, int categoryID)
+	void SendCreateListing(string itemClassName, int listingType, int startPrice, int buyNowPrice, int durationMinutes, int categoryID, int networkLow, int networkHigh)
 	{
 		if (!g_Game)
 			return;
@@ -543,6 +601,8 @@ class DME_AH_AuctionMenu : UIScriptedMenu
 		rpc.Write(buyNowPrice);
 		rpc.Write(durationMinutes);
 		rpc.Write(categoryID);
+		rpc.Write(networkLow);
+		rpc.Write(networkHigh);
 		rpc.Send(g_Game.GetPlayer(), EDME_AH_RPC.DME_AH_RPC_CREATE_LISTING, true, null);
 	}
 
@@ -604,6 +664,7 @@ class DME_AH_AuctionMenu : UIScriptedMenu
 			DME_AH_ListingRow row = new DME_AH_ListingRow();
 			row.ListingID = fields[0];
 			row.SellerName = fields[1];
+			row.ItemClassName = fields[2];
 			row.ItemName = fields[3];
 			row.ListingType = fields[5].ToInt();
 			row.Price = fields[6].ToInt();
@@ -689,6 +750,8 @@ class DME_AH_AuctionMenu : UIScriptedMenu
 			return "Max bids reached";
 		if (resultCode == EDME_AH_ResultCode.FailedItemNotInInventory)
 			return "Item not in inventory";
+		if (resultCode == EDME_AH_ResultCode.FailedItemHasAttachments)
+			return "Remove attachments and cargo before listing";
 		if (resultCode == EDME_AH_ResultCode.FailedCannotCancelWithBids)
 			return "Cannot cancel with active bids";
 		if (resultCode == EDME_AH_ResultCode.FailedOwnListing)

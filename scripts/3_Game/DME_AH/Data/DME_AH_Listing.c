@@ -19,6 +19,10 @@ class DME_AH_Listing
 	int CreatedTimestamp;
 	int ExpiresTimestamp;
 	int Status;
+	// Item snapshot (preserves health/quantity across listing -> sale)
+	float ItemHealth;
+	float ItemQuantity;
+	int ItemLiquidType;
 
 	void DME_AH_Listing()
 	{
@@ -38,6 +42,9 @@ class DME_AH_Listing
 		CreatedTimestamp = 0;
 		ExpiresTimestamp = 0;
 		Status = 0;
+		ItemHealth = -1;
+		ItemQuantity = -1;
+		ItemLiquidType = 0;
 	}
 
 	bool IsActive()

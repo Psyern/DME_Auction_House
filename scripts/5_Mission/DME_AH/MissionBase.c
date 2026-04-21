@@ -13,6 +13,9 @@ modded class MissionBase
 			case MENU_DME_AH_AUCTION:
 				menu = new DME_AH_AuctionMenu;
 				break;
+			case MENU_DME_AH_CREATE_LISTING:
+				menu = new DME_AH_CreateListingDialog;
+				break;
 		}
 
 		return menu;

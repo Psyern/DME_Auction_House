@@ -3,6 +3,7 @@
 class DME_AH_ListingRow
 {
 	string ListingID;
+	string ItemClassName;
 	string ItemName;
 	int Price;
 	int ListingType;
@@ -15,6 +16,7 @@ class DME_AH_ListingRow
 	void DME_AH_ListingRow()
 	{
 		ListingID = "";
+		ItemClassName = "";
 		ItemName = "";
 		Price = 0;
 		ListingType = 0;
@@ -56,6 +58,7 @@ class DME_AH_ListingRow
 
 		DME_AH_ListingRow row = new DME_AH_ListingRow();
 		row.ListingID = listing.ListingID;
+		row.ItemClassName = listing.ItemClassName;
 		row.ItemName = listing.ItemDisplayName;
 		row.Price = listing.GetCurrentPrice();
 		row.ListingType = listing.ListingType;

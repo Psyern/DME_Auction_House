@@ -17,6 +17,7 @@ const string DME_AH_NPC_FILE = DME_AH_CONFIG_DIR + "NPCs.json";
 
 // Menu IDs
 const int MENU_DME_AH_AUCTION = 10100;
+const int MENU_DME_AH_CREATE_LISTING = 10101;
 
 // Pagination
 const int DME_AH_LISTINGS_PER_PAGE = 20;

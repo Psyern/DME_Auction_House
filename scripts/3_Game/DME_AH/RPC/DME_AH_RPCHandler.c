@@ -115,11 +115,54 @@ class DME_AH_RPCHandler
 		int categoryID;
 		if (!ctx.Read(categoryID))
 			return;
+		int networkLow;
+		if (!ctx.Read(networkLow))
+			return;
+		int networkHigh;
+		if (!ctx.Read(networkHigh))
+			return;
 
 		string playerUID = sender.GetPlainId();
 		string playerName = sender.GetName();
+		int result = EDME_AH_ResultCode.FailedServerError;
 
-		int result = m_AuctionManager.CreateListing(playerUID, playerName, itemClassName, listingType, startPrice, buyNowPrice, durationMinutes, categoryID);
+		// Resolve the entity from NetworkID, validate ownership + no attachments/cargo
+		Object obj = GetGame().GetObjectByNetworkId(networkLow, networkHigh);
+		EntityAI item;
+		if (!Class.CastTo(item, obj))
+		{
+			result = EDME_AH_ResultCode.FailedItemNotInInventory;
+		}
+		else
+		{
+			// Validate item is in sender's inventory (hierarchy root is the player)
+			Man rootMan = item.GetHierarchyRootPlayer();
+			if (!rootMan || !rootMan.GetIdentity() || rootMan.GetIdentity().GetPlainId() != playerUID)
+			{
+				result = EDME_AH_ResultCode.FailedItemNotInInventory;
+			}
+			else if (item.GetInventory().AttachmentCount() > 0)
+			{
+				result = EDME_AH_ResultCode.FailedItemHasAttachments;
+			}
+			else
+			{
+				// Check cargo contents (if any)
+				bool hasCargo = false;
+				CargoBase cargo = item.GetInventory().GetCargo();
+				if (cargo && cargo.GetItemCount() > 0)
+					hasCargo = true;
+				if (hasCargo)
+				{
+					result = EDME_AH_ResultCode.FailedItemHasAttachments;
+				}
+				else
+				{
+					// All validation passed — delegate to manager with the resolved entity
+					result = m_AuctionManager.CreateListing(playerUID, playerName, itemClassName, listingType, startPrice, buyNowPrice, durationMinutes, categoryID, item);
+				}
+			}
+		}
 
 		ScriptRPC rpc = new ScriptRPC();
 		rpc.Write(result);

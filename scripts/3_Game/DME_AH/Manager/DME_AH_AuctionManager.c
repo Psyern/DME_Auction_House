@@ -33,10 +33,14 @@ class DME_AH_AuctionManager
 	}
 
 	// --- Create Listing ---
-	int CreateListing(string sellerUID, string sellerName, string itemClassName, int listingType, int startPrice, int buyNowPrice, int durationMinutes, int categoryID)
+	// `item` is the resolved, validated EntityAI from the seller's inventory (ownership/no-attachments/no-cargo already checked in RPC handler).
+	int CreateListing(string sellerUID, string sellerName, string itemClassName, int listingType, int startPrice, int buyNowPrice, int durationMinutes, int categoryID, EntityAI item)
 	{
 		if (!m_Config || !m_DataStore)
 			return EDME_AH_ResultCode.FailedServerError;
+
+		if (!item)
+			return EDME_AH_ResultCode.FailedItemNotInInventory;
 
 		if (startPrice < m_Config.MinPrice || startPrice > m_Config.MaxPrice)
 			return EDME_AH_ResultCode.FailedInvalidPrice;
@@ -57,6 +61,10 @@ class DME_AH_AuctionManager
 		int listingFee = m_Config.CalculateListingFee(startPrice);
 		if (listingFee > 0 && !m_CurrencyAdapter.HasEnough(sellerUID, listingFee))
 			return EDME_AH_ResultCode.FailedNotEnoughMoney;
+
+		// Snapshot item state BEFORE anything destructive — exploit prevention.
+		float snapHealth = item.GetHealth("", "");
+		float snapQuantity = item.GetQuantity();
 
 		if (listingFee > 0)
 		{
@@ -85,11 +93,76 @@ class DME_AH_AuctionManager
 		listing.CreatedTimestamp = currentTime;
 		listing.ExpiresTimestamp = expiresTime;
 		listing.Status = EDME_AH_ListingStatus.Active;
+		listing.ItemHealth = snapHealth;
+		listing.ItemQuantity = snapQuantity;
+		listing.ItemLiquidType = 0;
 
 		m_DataStore.AddListing(listing);
+		// Only destroy the inventory item AFTER the listing is persisted. If anything above fails, item stays with seller.
+		g_Game.ObjectDelete(item);
 		string feeStr = m_Config.CalculateListingFee(startPrice).ToString();
-		DME_AH_Logger.Info("Listing created: " + listing.ListingID + " by " + sellerName + " for " + itemClassName + " (fee: " + feeStr + ")");
+		DME_AH_Logger.Info("Listing created: " + listing.ListingID + " by " + sellerName + " for " + itemClassName + " (fee: " + feeStr + ", health: " + snapHealth.ToString() + ", qty: " + snapQuantity.ToString() + ")");
 		return EDME_AH_ResultCode.Success;
+	}
+
+	// Look up an online Man by PlainID. Returns null if offline.
+	protected Man FindPlayerByUID(string playerUID)
+	{
+		if (!g_Game)
+			return null;
+		array<Man> players = new array<Man>;
+		g_Game.GetPlayers(players);
+		for (int i = 0; i < players.Count(); i++)
+		{
+			Man man = players[i];
+			if (!man)
+				continue;
+			PlayerIdentity identity = man.GetIdentity();
+			if (!identity)
+				continue;
+			if (identity.GetPlainId() == playerUID)
+				return man;
+		}
+		return null;
+	}
+
+	// Tries to spawn `listing`'s item into `player`'s inventory; falls back to a pending pickup on failure.
+	// `pendingPrefix` is used to make a unique PendingID.
+	protected void DeliverItemToPlayer(DME_AH_Listing listing, string targetUID, string pendingPrefix)
+	{
+		if (!listing || !m_DataStore)
+			return;
+
+		Man player = FindPlayerByUID(targetUID);
+		EntityAI spawned = null;
+		if (player)
+		{
+			spawned = player.GetInventory().CreateInInventory(listing.ItemClassName);
+			if (spawned)
+			{
+				if (listing.ItemHealth >= 0)
+					spawned.SetHealth("", "", listing.ItemHealth);
+				if (listing.ItemQuantity > 0)
+					spawned.SetQuantity(listing.ItemQuantity);
+				DME_AH_Logger.Info("Item delivered: " + listing.ItemClassName + " -> " + targetUID + " (health: " + listing.ItemHealth.ToString() + ", qty: " + listing.ItemQuantity.ToString() + ")");
+				return;
+			}
+		}
+
+		// Offline or inventory full — queue a pending item pickup
+		DME_AH_PendingPickup pickup = new DME_AH_PendingPickup();
+		pickup.PendingID = pendingPrefix + "_" + listing.ListingID + "_" + targetUID;
+		pickup.PlayerUID = targetUID;
+		pickup.ItemClassName = listing.ItemClassName;
+		pickup.IsItem = true;
+		pickup.ItemHealth = listing.ItemHealth;
+		pickup.ItemQuantity = listing.ItemQuantity;
+		pickup.ItemLiquidType = listing.ItemLiquidType;
+		pickup.Amount = 0;
+		pickup.Type = EDME_AH_TransactionType.BuyNow;
+		pickup.Timestamp = DME_AH_Util.GetTimestamp();
+		m_DataStore.AddPendingPickup(pickup);
+		DME_AH_Logger.Info("Item pending pickup queued: " + listing.ItemClassName + " -> " + targetUID);
 	}
 
 	// --- Buy Now ---
@@ -139,6 +212,9 @@ class DME_AH_AuctionManager
 
 		if (listing.HasBids())
 			RefundCurrentBidder(listing);
+
+		// Deliver the item to the buyer (online -> inventory, offline/full -> pending pickup)
+		DeliverItemToPlayer(listing, buyerUID, "ITEM");
 
 		listing.Status = EDME_AH_ListingStatus.Sold;
 
@@ -228,6 +304,9 @@ class DME_AH_AuctionManager
 		if (listing.HasBids())
 			return EDME_AH_ResultCode.FailedCannotCancelWithBids;
 
+		// Return the item to the seller
+		DeliverItemToPlayer(listing, listing.SellerUID, "ITEM_CANCEL");
+
 		listing.Status = EDME_AH_ListingStatus.Cancelled;
 
 		DME_AH_Transaction transaction = new DME_AH_Transaction();
@@ -293,6 +372,9 @@ class DME_AH_AuctionManager
 			m_DataStore.AddPendingPickup(pickup);
 		}
 
+		// Deliver the item to the winning bidder (online -> inventory, offline/full -> pending pickup)
+		DeliverItemToPlayer(listing, listing.CurrentBidderUID, "ITEM");
+
 		listing.Status = EDME_AH_ListingStatus.Sold;
 
 		DME_AH_Transaction transaction = new DME_AH_Transaction();
@@ -319,6 +401,9 @@ class DME_AH_AuctionManager
 	{
 		if (!listing || !m_DataStore)
 			return;
+
+		// No buyer — return the item to the seller
+		DeliverItemToPlayer(listing, listing.SellerUID, "ITEM_EXPIRE");
 
 		listing.Status = EDME_AH_ListingStatus.Expired;
 

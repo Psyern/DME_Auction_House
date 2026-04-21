@@ -107,9 +107,29 @@ class DME_AH_Module
 		}
 		else
 		{
-			m_CurrencyAdapter = new DME_AH_CurrencyExpansion();
-			DME_AH_Logger.Info("Currency adapter: Expansion");
+			// DME_AH_CurrencyExpansion lives in 4_World (it references
+			// ExpansionMarketModule types). We cannot instantiate it directly
+			// from 3_Game; a modded_class hook in 4_World provides it.
+			m_CurrencyAdapter = CreateExpansionCurrencyAdapter();
+			if (!m_CurrencyAdapter)
+			{
+				DME_AH_Logger.Warning("Currency adapter: Expansion factory returned null, falling back to internal");
+				DME_AH_CurrencyInternal fallback = new DME_AH_CurrencyInternal();
+				fallback.SetDataStore(m_DataStore);
+				m_CurrencyAdapter = fallback;
+			}
+			else
+			{
+				DME_AH_Logger.Info("Currency adapter: Expansion");
+			}
 		}
+	}
+
+	// Factory hook. Overridden by modded class in 4_World to construct
+	// DME_AH_CurrencyExpansion (which cannot be referenced from 3_Game).
+	protected DME_AH_CurrencyAdapter CreateExpansionCurrencyAdapter()
+	{
+		return null;
 	}
 
 	void OnUpdate()

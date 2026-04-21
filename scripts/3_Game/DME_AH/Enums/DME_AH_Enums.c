@@ -47,7 +47,8 @@ enum EDME_AH_ResultCode
 	FailedCannotCancelWithBids,
 	FailedOwnListing,
 	FailedInvalidPrice,
-	FailedServerError
+	FailedServerError,
+	FailedItemHasAttachments
 }
 
 enum EDME_AH_NotificationType

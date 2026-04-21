@@ -1,6 +1,13 @@
 // DME Auction House - Expansion Market Currency Adapter
-// NO compile-time dependency on Expansion or 4_World types
-// Uses Man/EntityAI (available in 3_Game) instead of PlayerBase
+// Lives in 4_World because ExpansionMarketModule/ExpansionMarketATM_Data are
+// declared in Expansion's 4_World layer and 3_Game cannot reference them.
+//
+// Must still compile cleanly when Expansion is NOT loaded. All references to
+// Expansion types are wrapped in #ifdef EXPANSIONMODMARKET which is defined in
+// 0_DayZExpansion_Market_Preload/Common/DayZExpansion_Market_Defines.c.
+//
+// Uses Man/EntityAI (also available in 4_World) for player iteration — we do
+// not cast to PlayerBase since we do not need it here.
 
 class DME_AH_CurrencyExpansion : DME_AH_CurrencyAdapter
 {
@@ -17,10 +24,20 @@ class DME_AH_CurrencyExpansion : DME_AH_CurrencyAdapter
 	override int GetBalance(string playerUID)
 	{
 		Man player = GetPlayerByUID(playerUID);
-		if (!player)
-			return 0;
+		int total = 0;
+		if (player)
+			total = CountMoneyInInventory(player);
 
-		return CountMoneyInInventory(player);
+		#ifdef EXPANSIONMODMARKET
+		if (IsBankEnabled())
+		{
+			ExpansionMarketATM_Data atm = ExpansionMarketModule.GetInstance().GetPlayerATMData(playerUID);
+			if (atm)
+				total = total + atm.GetMoney();
+		}
+		#endif
+
+		return total;
 	}
 
 	override bool Deduct(string playerUID, int amount)
@@ -29,14 +46,59 @@ class DME_AH_CurrencyExpansion : DME_AH_CurrencyAdapter
 			return false;
 
 		Man player = GetPlayerByUID(playerUID);
-		if (!player)
+
+		int inventoryAvailable = 0;
+		if (player)
+			inventoryAvailable = CountMoneyInInventory(player);
+
+		int deductFromInventory = amount;
+		if (deductFromInventory > inventoryAvailable)
+			deductFromInventory = inventoryAvailable;
+
+		int remainder = amount - deductFromInventory;
+
+		// Short-circuit: if we do not need the bank and inventory has enough, do the normal path.
+		if (remainder <= 0)
+		{
+			if (!player)
+				return false;
+			return RemoveMoneyFromInventory(player, amount);
+		}
+
+		// We need the bank for the remainder.
+		#ifdef EXPANSIONMODMARKET
+		if (!IsBankEnabled())
 			return false;
 
-		int available = CountMoneyInInventory(player);
-		if (available < amount)
+		ExpansionMarketATM_Data atm = ExpansionMarketModule.GetInstance().GetPlayerATMData(playerUID);
+		if (!atm)
 			return false;
 
-		return RemoveMoneyFromInventory(player, amount);
+		int atmAvailable = atm.GetMoney();
+		if (atmAvailable < remainder)
+			return false;
+
+		// Drain inventory first (may be 0 if player offline).
+		bool inventoryOk = true;
+		if (player && deductFromInventory > 0)
+			inventoryOk = RemoveMoneyFromInventory(player, deductFromInventory);
+
+		if (!inventoryOk)
+		{
+			// Rollback: re-spawn what we think was taken. Best-effort.
+			if (player && deductFromInventory > 0)
+				SpawnMoneyToInventory(player, deductFromInventory);
+			return false;
+		}
+
+		// Deduct remainder from ATM.
+		atm.RemoveMoney(remainder);
+		atm.Save();
+		return true;
+		#else
+		// No Expansion -> cannot satisfy the bank portion, fail cleanly.
+		return false;
+		#endif
 	}
 
 	override bool Add(string playerUID, int amount)
@@ -45,13 +107,51 @@ class DME_AH_CurrencyExpansion : DME_AH_CurrencyAdapter
 			return false;
 
 		Man player = GetPlayerByUID(playerUID);
-		if (!player)
+		if (player)
 		{
-			DME_AH_Logger.Warning("CurrencyExpansion: Player offline, cannot add money");
+			if (SpawnMoneyToInventory(player, amount))
+				return true;
+
+			DME_AH_Logger.Warning("CurrencyExpansion: Inventory spawn failed, falling back to ATM");
+		}
+		else
+		{
+			DME_AH_Logger.Info("CurrencyExpansion: Player offline, depositing to ATM");
+		}
+
+		// Fallback: ATM deposit (works even for offline players).
+		#ifdef EXPANSIONMODMARKET
+		if (!IsBankEnabled())
+			return false;
+
+		ExpansionMarketModule mod = ExpansionMarketModule.GetInstance();
+		if (!mod)
+			return false;
+
+		ExpansionMarketATM_Data atm = mod.GetPlayerATMData(playerUID);
+		if (!atm)
+		{
+			DME_AH_Logger.Warning("CurrencyExpansion: No ATM data for " + playerUID + " (player never visited ATM)");
 			return false;
 		}
 
-		return SpawnMoneyToInventory(player, amount);
+		atm.AddMoney(amount);
+		atm.Save();
+		return true;
+		#else
+		return false;
+		#endif
+	}
+
+	protected bool IsBankEnabled()
+	{
+		DME_AH_Module mod = DME_AH_Module.GetInstance();
+		if (!mod)
+			return false;
+		DME_AH_Config cfg = mod.GetConfig();
+		if (!cfg)
+			return false;
+		return cfg.UseExpansionBank;
 	}
 
 	protected int CountMoneyInInventory(Man player)
@@ -147,7 +247,7 @@ class DME_AH_CurrencyExpansion : DME_AH_CurrencyAdapter
 			EntityAI spawned = player.GetInventory().CreateInInventory(moneyClass);
 			if (!spawned)
 			{
-				DME_AH_Logger.Warning("CurrencyExpansion: Failed to spawn money");
+				DME_AH_Logger.Warning("CurrencyExpansion: Failed to spawn money (inventory full?)");
 				return false;
 			}
 

@@ -20,6 +20,7 @@ class DME_AH_Config
 	int MaxHistoryEntries = 500;
 	bool NotificationsEnabled = true;
 	int DebugLogLevel = 3;
+	bool UseExpansionBank = true;
 
 	void DME_AH_Config()
 	{
