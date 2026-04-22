@@ -9,6 +9,10 @@ modded class MissionServer
 		DME_AH_Module module = DME_AH_Module.GetInstance();
 		if (module)
 		{
+			// Inject the 4_World Expansion currency adapter before Init so the
+			// module can use it if the config selects Expansion currency.
+			module.SetExpansionAdapter(new DME_AH_CurrencyExpansion());
+
 			module.Init();
 
 			DME_AH_NPCConfig npcConfig = module.GetNPCConfig();

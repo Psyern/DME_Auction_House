@@ -108,29 +108,32 @@ class DME_AH_Module
 		else
 		{
 			// DME_AH_CurrencyExpansion lives in 4_World (it references
-			// ExpansionMarketModule types). We cannot instantiate it directly
-			// from 3_Game; a modded_class hook in 4_World provides it.
-			m_CurrencyAdapter = CreateExpansionCurrencyAdapter();
-			if (!m_CurrencyAdapter)
+			// ExpansionMarketModule types). 3_Game cannot reference it, and
+			// `modded class` does not work across script modules. 5_Mission
+			// injects a pre-constructed instance via SetExpansionAdapter().
+			if (m_InjectedExpansionAdapter)
 			{
-				DME_AH_Logger.Warning("Currency adapter: Expansion factory returned null, falling back to internal");
+				m_CurrencyAdapter = m_InjectedExpansionAdapter;
+				DME_AH_Logger.Info("Currency adapter: Expansion");
+			}
+			else
+			{
+				DME_AH_Logger.Warning("Currency adapter: no Expansion adapter was injected, falling back to internal");
 				DME_AH_CurrencyInternal fallback = new DME_AH_CurrencyInternal();
 				fallback.SetDataStore(m_DataStore);
 				m_CurrencyAdapter = fallback;
 			}
-			else
-			{
-				DME_AH_Logger.Info("Currency adapter: Expansion");
-			}
 		}
 	}
 
-	// Factory hook. Overridden by modded class in 4_World to construct
-	// DME_AH_CurrencyExpansion (which cannot be referenced from 3_Game).
-	protected DME_AH_CurrencyAdapter CreateExpansionCurrencyAdapter()
+	// 5_Mission calls this before Init() to hand us a DME_AH_CurrencyExpansion
+	// instance (which it can construct because 5_Mission sees 4_World).
+	void SetExpansionAdapter(DME_AH_CurrencyAdapter adapter)
 	{
-		return null;
+		m_InjectedExpansionAdapter = adapter;
 	}
+
+	protected ref DME_AH_CurrencyAdapter m_InjectedExpansionAdapter;
 
 	void OnUpdate()
 	{
