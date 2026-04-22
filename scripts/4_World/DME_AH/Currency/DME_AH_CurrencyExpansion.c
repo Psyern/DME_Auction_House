@@ -24,20 +24,22 @@ class DME_AH_CurrencyExpansion : DME_AH_CurrencyAdapter
 	override int GetBalance(string playerUID)
 	{
 		Man player = GetPlayerByUID(playerUID);
-		int total = 0;
+		int inventoryTotal = 0;
 		if (player)
-			total = CountMoneyInInventory(player);
+			inventoryTotal = CountMoneyInInventory(player);
 
+		int bankTotal = 0;
 		#ifdef EXPANSIONMODMARKET
 		if (IsBankEnabled())
 		{
-			ExpansionMarketATM_Data atm = ExpansionMarketModule.GetInstance().GetPlayerATMData(playerUID);
+			ExpansionMarketATM_Data atm = GetOrCreateATM(playerUID);
 			if (atm)
-				total = total + atm.GetMoney();
+				bankTotal = atm.GetMoney();
 		}
 		#endif
 
-		return total;
+		DME_AH_Logger.Debug("CurrencyExpansion.GetBalance: uid=" + playerUID + " inv=" + inventoryTotal + " bank=" + bankTotal);
+		return inventoryTotal + bankTotal;
 	}
 
 	override bool Deduct(string playerUID, int amount)
@@ -68,15 +70,24 @@ class DME_AH_CurrencyExpansion : DME_AH_CurrencyAdapter
 		// We need the bank for the remainder.
 		#ifdef EXPANSIONMODMARKET
 		if (!IsBankEnabled())
+		{
+			DME_AH_Logger.Warning("CurrencyExpansion.Deduct: inventory short by " + remainder.ToString() + " and UseExpansionBank=false");
 			return false;
+		}
 
-		ExpansionMarketATM_Data atm = ExpansionMarketModule.GetInstance().GetPlayerATMData(playerUID);
+		ExpansionMarketATM_Data atm = GetOrCreateATM(playerUID);
 		if (!atm)
+		{
+			DME_AH_Logger.Warning("CurrencyExpansion.Deduct: could not resolve ATM data for " + playerUID);
 			return false;
+		}
 
 		int atmAvailable = atm.GetMoney();
 		if (atmAvailable < remainder)
+		{
+			DME_AH_Logger.Info("CurrencyExpansion.Deduct: bank has " + atmAvailable.ToString() + " but needs " + remainder.ToString());
 			return false;
+		}
 
 		// Drain inventory first (may be 0 if player offline).
 		bool inventoryOk = true;
@@ -94,9 +105,10 @@ class DME_AH_CurrencyExpansion : DME_AH_CurrencyAdapter
 		// Deduct remainder from ATM.
 		atm.RemoveMoney(remainder);
 		atm.Save();
+		DME_AH_Logger.Info("CurrencyExpansion.Deduct: " + deductFromInventory.ToString() + " from inventory + " + remainder.ToString() + " from bank (uid=" + playerUID + ")");
 		return true;
 		#else
-		// No Expansion -> cannot satisfy the bank portion, fail cleanly.
+		DME_AH_Logger.Warning("CurrencyExpansion.Deduct: EXPANSIONMODMARKET not defined — Expansion Market not loaded, cannot use bank");
 		return false;
 		#endif
 	}
@@ -122,35 +134,89 @@ class DME_AH_CurrencyExpansion : DME_AH_CurrencyAdapter
 		// Fallback: ATM deposit (works even for offline players).
 		#ifdef EXPANSIONMODMARKET
 		if (!IsBankEnabled())
+		{
+			DME_AH_Logger.Warning("CurrencyExpansion.Add: inventory spawn failed and UseExpansionBank=false");
 			return false;
+		}
 
-		ExpansionMarketModule mod = ExpansionMarketModule.GetInstance();
-		if (!mod)
-			return false;
-
-		ExpansionMarketATM_Data atm = mod.GetPlayerATMData(playerUID);
+		ExpansionMarketATM_Data atm = GetOrCreateATM(playerUID);
 		if (!atm)
 		{
-			DME_AH_Logger.Warning("CurrencyExpansion: No ATM data for " + playerUID + " (player never visited ATM)");
+			DME_AH_Logger.Warning("CurrencyExpansion.Add: could not resolve ATM data for " + playerUID);
 			return false;
 		}
 
 		atm.AddMoney(amount);
 		atm.Save();
+		DME_AH_Logger.Info("CurrencyExpansion.Add: deposited " + amount.ToString() + " to bank (uid=" + playerUID + ")");
 		return true;
 		#else
+		DME_AH_Logger.Warning("CurrencyExpansion.Add: EXPANSIONMODMARKET not defined");
 		return false;
 		#endif
 	}
+
+	#ifdef EXPANSIONMODMARKET
+	// Gets the player's ATM data; auto-creates if missing (matches Expansion's
+	// own OnInvokeConnect behavior, but safe if the player hadn't connected yet
+	// with ATMSystemEnabled or if the file was purged).
+	protected ExpansionMarketATM_Data GetOrCreateATM(string playerUID)
+	{
+		ExpansionMarketModule mod = ExpansionMarketModule.GetInstance();
+		if (!mod)
+		{
+			DME_AH_Logger.Warning("CurrencyExpansion: ExpansionMarketModule.GetInstance() is null");
+			return null;
+		}
+
+		ExpansionMarketATM_Data atm = mod.GetPlayerATMData(playerUID);
+		if (atm)
+			return atm;
+
+		// Not found — resolve an online PlayerIdentity so Expansion can create the file.
+		PlayerIdentity identity = null;
+		array<Man> players = new array<Man>;
+		if (g_Game)
+			g_Game.GetPlayers(players);
+		for (int i = 0; i < players.Count(); i++)
+		{
+			Man m = players[i];
+			if (!m)
+				continue;
+			PlayerIdentity id = m.GetIdentity();
+			if (id && id.GetPlainId() == playerUID)
+			{
+				identity = id;
+				break;
+			}
+		}
+
+		if (!identity)
+		{
+			DME_AH_Logger.Warning("CurrencyExpansion: player " + playerUID + " is offline and has no ATM data — cannot auto-create");
+			return null;
+		}
+
+		DME_AH_Logger.Info("CurrencyExpansion: auto-creating ATM data for " + playerUID);
+		mod.CreateATMData(identity);
+		return mod.GetPlayerATMData(playerUID);
+	}
+	#endif
 
 	protected bool IsBankEnabled()
 	{
 		DME_AH_Module mod = DME_AH_Module.GetInstance();
 		if (!mod)
+		{
+			DME_AH_Logger.Debug("CurrencyExpansion.IsBankEnabled: DME_AH_Module instance null");
 			return false;
+		}
 		DME_AH_Config cfg = mod.GetConfig();
 		if (!cfg)
+		{
+			DME_AH_Logger.Debug("CurrencyExpansion.IsBankEnabled: config null");
 			return false;
+		}
 		return cfg.UseExpansionBank;
 	}
 

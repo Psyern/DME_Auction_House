@@ -50,6 +50,7 @@ class DME_AH_AuctionMenu : UIScriptedMenu
 	protected ButtonWidget m_BtnPrevPage;
 	protected ButtonWidget m_BtnNextPage;
 	protected ButtonWidget m_BtnClose;
+	protected ButtonWidget m_BtnSellSelected;
 
 	// Detail panel
 	protected ref DME_AH_DetailPanel m_DetailPanel;
@@ -112,6 +113,7 @@ class DME_AH_AuctionMenu : UIScriptedMenu
 		m_BtnPrevPage = ButtonWidget.Cast(layoutRoot.FindAnyWidget("btnPrevPage"));
 		m_BtnNextPage = ButtonWidget.Cast(layoutRoot.FindAnyWidget("btnNextPage"));
 		m_BtnClose = ButtonWidget.Cast(layoutRoot.FindAnyWidget("btnClose"));
+		m_BtnSellSelected = ButtonWidget.Cast(layoutRoot.FindAnyWidget("btnSellSelected"));
 
 		// Detail panel
 		m_DetailPanelRoot = layoutRoot.FindAnyWidget("DetailPanel");
@@ -269,6 +271,12 @@ class DME_AH_AuctionMenu : UIScriptedMenu
 			return true;
 		}
 
+		if (w == m_BtnSellSelected)
+		{
+			OpenCreateListingDialog();
+			return true;
+		}
+
 		return false;
 	}
 
@@ -280,6 +288,9 @@ class DME_AH_AuctionMenu : UIScriptedMenu
 		if (m_DetailPanel)
 			m_DetailPanel.Hide();
 		UpdateTabHighlight();
+
+		if (m_BtnSellSelected)
+			m_BtnSellSelected.Show(tab == EDME_AH_MenuTab.SellItem);
 
 		if (tab == EDME_AH_MenuTab.Marketplace)
 			RequestListings();
@@ -514,6 +525,7 @@ class DME_AH_AuctionMenu : UIScriptedMenu
 
 	protected void OnInventoryItemSelected()
 	{
+		// Row click only marks the selection — user must press "Sell Selected Item" to open the dialog.
 		if (!m_LstListings || !m_InventoryItems)
 			return;
 
@@ -522,10 +534,25 @@ class DME_AH_AuctionMenu : UIScriptedMenu
 			return;
 
 		EntityAI selectedItem = m_InventoryItems[selectedRow];
-		if (!selectedItem)
+		if (selectedItem)
+			DME_AH_Logger.Info("Selected inventory item: " + selectedItem.GetType());
+	}
+
+	protected void OpenCreateListingDialog()
+	{
+		if (!m_LstListings || !m_InventoryItems)
 			return;
 
-		DME_AH_Logger.Info("Selected inventory item: " + selectedItem.GetType());
+		int selectedRow = m_LstListings.GetSelectedRow();
+		if (selectedRow < 0 || selectedRow >= m_InventoryItems.Count())
+		{
+			DME_AH_NotificationHandler.ShowNotification("No Item Selected", "Select an item from your inventory first.");
+			return;
+		}
+
+		EntityAI selectedItem = m_InventoryItems[selectedRow];
+		if (!selectedItem)
+			return;
 
 		if (!g_Game)
 			return;
@@ -533,7 +560,6 @@ class DME_AH_AuctionMenu : UIScriptedMenu
 		if (!uiManager)
 			return;
 
-		// Open the create-listing dialog; it will read prices + NetworkID itself.
 		UIScriptedMenu menu = uiManager.EnterScriptedMenu(MENU_DME_AH_CREATE_LISTING, null);
 		DME_AH_CreateListingDialog dialog;
 		if (Class.CastTo(dialog, menu))
