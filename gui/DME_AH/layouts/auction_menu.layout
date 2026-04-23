@@ -201,8 +201,8 @@ PanelWidgetClass RootPanel {
      }
     }
     ButtonWidgetClass btnSellSelected {
-     position 0.02 0.95
-     size 0.22 0.04
+     position 0.73 0.2
+     size 0.25 0.05
      text "SELL SELECTED ITEM"
      font "gui/fonts/metron16bold"
      color 0 0.8 0 1
