@@ -5,6 +5,7 @@ class DME_AH_CreateListingDialog : UIScriptedMenu
 	protected TextListboxWidget m_LstInventory;
 	protected ItemPreviewWidget m_ItemPreview;
 	protected TextWidget m_TxtSelectedItem;
+	protected TextWidget m_TxtBalance;
 	protected XComboBoxWidget m_ComboListingType;
 	protected XComboBoxWidget m_ComboCategoryCreate;
 	protected XComboBoxWidget m_ComboDuration;
@@ -13,6 +14,7 @@ class DME_AH_CreateListingDialog : UIScriptedMenu
 	protected TextWidget m_TxtFeeInfo;
 	protected ButtonWidget m_BtnCreateListing;
 	protected ButtonWidget m_BtnCancelCreate;
+	protected ButtonWidget m_BtnBackToMarket;
 
 	protected EntityAI m_SelectedItem;
 	protected string m_SelectedItemClass;
@@ -64,6 +66,7 @@ class DME_AH_CreateListingDialog : UIScriptedMenu
 		m_LstInventory = TextListboxWidget.Cast(layoutRoot.FindAnyWidget("lstInventory"));
 		m_ItemPreview = ItemPreviewWidget.Cast(layoutRoot.FindAnyWidget("itemPreviewCreate"));
 		m_TxtSelectedItem = TextWidget.Cast(layoutRoot.FindAnyWidget("txtSelectedItem"));
+		m_TxtBalance = TextWidget.Cast(layoutRoot.FindAnyWidget("txtBalance"));
 		m_ComboListingType = XComboBoxWidget.Cast(layoutRoot.FindAnyWidget("comboListingType"));
 		m_ComboCategoryCreate = XComboBoxWidget.Cast(layoutRoot.FindAnyWidget("comboCategoryCreate"));
 		m_ComboDuration = XComboBoxWidget.Cast(layoutRoot.FindAnyWidget("comboDuration"));
@@ -72,11 +75,42 @@ class DME_AH_CreateListingDialog : UIScriptedMenu
 		m_TxtFeeInfo = TextWidget.Cast(layoutRoot.FindAnyWidget("txtFeeInfo"));
 		m_BtnCreateListing = ButtonWidget.Cast(layoutRoot.FindAnyWidget("btnCreateListing"));
 		m_BtnCancelCreate = ButtonWidget.Cast(layoutRoot.FindAnyWidget("btnCancelCreate"));
+		m_BtnBackToMarket = ButtonWidget.Cast(layoutRoot.FindAnyWidget("btnBackToMarket"));
 
 		PopulateComboBoxes();
 		PopulateInventory();
+		UpdateBalanceFromParent();
 
 		return layoutRoot;
+	}
+
+	protected void UpdateBalanceFromParent()
+	{
+		if (!m_TxtBalance || !m_ParentMenu)
+			return;
+		int balance = m_ParentMenu.GetPlayerBalance();
+		m_TxtBalance.SetText("Balance: " + balance.ToString());
+	}
+
+	override bool UseKeyboard()
+	{
+		return true;
+	}
+
+	override bool UseMouse()
+	{
+		return true;
+	}
+
+	override bool OnKeyPress(Widget w, int x, int y, int key)
+	{
+		super.OnKeyPress(w, x, y, key);
+		if (key == KeyCode.KC_ESCAPE)
+		{
+			Close();
+			return true;
+		}
+		return false;
 	}
 
 	protected void PopulateComboBoxes()
@@ -166,7 +200,7 @@ class DME_AH_CreateListingDialog : UIScriptedMenu
 	{
 		super.OnClick(w, x, y, button);
 
-		if (w == m_BtnCancelCreate)
+		if (w == m_BtnCancelCreate || w == m_BtnBackToMarket)
 		{
 			Close();
 			return true;
@@ -185,6 +219,42 @@ class DME_AH_CreateListingDialog : UIScriptedMenu
 		}
 
 		return false;
+	}
+
+	// EditBoxWidget fires OnChange when text changes — keep the fee preview live.
+	override bool OnChange(Widget w, int x, int y, bool finished)
+	{
+		if (w == m_EditStartPrice)
+		{
+			UpdateFeeInfo();
+			return true;
+		}
+		return super.OnChange(w, x, y, finished);
+	}
+
+	protected void UpdateFeeInfo()
+	{
+		if (!m_TxtFeeInfo)
+			return;
+
+		int startPrice = 0;
+		if (m_EditStartPrice)
+			startPrice = m_EditStartPrice.GetText().ToInt();
+
+		int fee = 0;
+		if (m_ParentMenu)
+		{
+			DME_AH_Module module = DME_AH_Module.GetInstance();
+			if (module)
+			{
+				DME_AH_Config cfg = module.GetConfig();
+				if (cfg)
+					fee = cfg.CalculateListingFee(startPrice);
+			}
+		}
+
+		m_TxtFeeInfo.SetColor(ARGB(255, 204, 153, 0));
+		m_TxtFeeInfo.SetText("Listing Fee: " + fee.ToString());
 	}
 
 	protected void OnInventoryItemSelected()

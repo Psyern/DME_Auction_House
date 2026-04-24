@@ -29,9 +29,17 @@ PanelWidgetClass RootPanel {
      "exact text" 1
      ignorepointer 1
     }
+    ButtonWidgetClass btnSellItem {
+     position 0.55 0.008
+     size 0.13 0.045
+     text "+ SELL ITEM"
+     font "gui/fonts/metron16bold"
+     color 0 0.8 0 1
+     style DayZDefaultPanel
+    }
     TextWidgetClass txtBalance {
      position 0.7 0.01
-     size 0.28 0.04
+     size 0.25 0.04
      font "gui/fonts/metron16bold"
      color 0 0.8 0 1
      text "Balance: 0"
@@ -54,29 +62,22 @@ PanelWidgetClass RootPanel {
      {
       ButtonWidgetClass btnTabMarketplace {
        position 0 0
-       size 0.24 1
+       size 0.32 1
        text "Marketplace"
        font "gui/fonts/metron16bold"
        color 1 0.5 0 1
       }
       ButtonWidgetClass btnTabMyListings {
-       position 0.25 0
-       size 0.24 1
+       position 0.33 0
+       size 0.32 1
        text "My Listings"
        font "gui/fonts/metron16"
        color 0.6 0.6 0.6 1
       }
       ButtonWidgetClass btnTabMyBids {
-       position 0.5 0
-       size 0.24 1
+       position 0.66 0
+       size 0.32 1
        text "My Bids"
-       font "gui/fonts/metron16"
-       color 0.6 0.6 0.6 1
-      }
-      ButtonWidgetClass btnTabSellItem {
-       position 0.75 0
-       size 0.24 1
-       text "Sell Item"
        font "gui/fonts/metron16"
        color 0.6 0.6 0.6 1
       }
@@ -199,14 +200,6 @@ PanelWidgetClass RootPanel {
        color 0.8 0.8 0.8 1
       }
      }
-    }
-    ButtonWidgetClass btnSellSelected {
-     position 0.73 0.2
-     size 0.25 0.05
-     text "SELL SELECTED ITEM"
-     font "gui/fonts/metron16bold"
-     color 0 0.8 0 1
-     visible 0
     }
     PanelWidgetClass DetailPanel {
      position 0.73 0.165

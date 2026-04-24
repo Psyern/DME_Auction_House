@@ -35,7 +35,7 @@ class DME_AH_AuctionMenu : UIScriptedMenu
 	protected ButtonWidget m_BtnTabMarketplace;
 	protected ButtonWidget m_BtnTabMyListings;
 	protected ButtonWidget m_BtnTabMyBids;
-	protected ButtonWidget m_BtnTabSellItem;
+	protected ButtonWidget m_BtnSellItem;
 	// Filter bar
 	protected EditBoxWidget m_EditSearch;
 	protected XComboBoxWidget m_ComboCategory;
@@ -50,7 +50,6 @@ class DME_AH_AuctionMenu : UIScriptedMenu
 	protected ButtonWidget m_BtnPrevPage;
 	protected ButtonWidget m_BtnNextPage;
 	protected ButtonWidget m_BtnClose;
-	protected ButtonWidget m_BtnSellSelected;
 
 	// Detail panel
 	protected ref DME_AH_DetailPanel m_DetailPanel;
@@ -97,7 +96,7 @@ class DME_AH_AuctionMenu : UIScriptedMenu
 		m_BtnTabMarketplace = ButtonWidget.Cast(layoutRoot.FindAnyWidget("btnTabMarketplace"));
 		m_BtnTabMyListings = ButtonWidget.Cast(layoutRoot.FindAnyWidget("btnTabMyListings"));
 		m_BtnTabMyBids = ButtonWidget.Cast(layoutRoot.FindAnyWidget("btnTabMyBids"));
-		m_BtnTabSellItem = ButtonWidget.Cast(layoutRoot.FindAnyWidget("btnTabSellItem"));
+		m_BtnSellItem = ButtonWidget.Cast(layoutRoot.FindAnyWidget("btnSellItem"));
 
 		// Filter bar
 		m_EditSearch = EditBoxWidget.Cast(layoutRoot.FindAnyWidget("editSearch"));
@@ -113,7 +112,6 @@ class DME_AH_AuctionMenu : UIScriptedMenu
 		m_BtnPrevPage = ButtonWidget.Cast(layoutRoot.FindAnyWidget("btnPrevPage"));
 		m_BtnNextPage = ButtonWidget.Cast(layoutRoot.FindAnyWidget("btnNextPage"));
 		m_BtnClose = ButtonWidget.Cast(layoutRoot.FindAnyWidget("btnClose"));
-		m_BtnSellSelected = ButtonWidget.Cast(layoutRoot.FindAnyWidget("btnSellSelected"));
 
 		// Detail panel
 		m_DetailPanelRoot = layoutRoot.FindAnyWidget("DetailPanel");
@@ -139,6 +137,40 @@ class DME_AH_AuctionMenu : UIScriptedMenu
 		return layoutRoot;
 	}
 
+	override void OnHide()
+	{
+		super.OnHide();
+		// NOTE: do NOT Close() here. OnHide fires every time a child menu
+		// (e.g. the sell dialog) is pushed on top of us. Closing on hide
+		// would destroy the parent marketplace menu the moment the user
+		// clicks SELL ITEM. Cleanup of hud/input is in the destructor.
+	}
+
+	override bool UseKeyboard()
+	{
+		return true;
+	}
+
+	override bool UseMouse()
+	{
+		return true;
+	}
+
+	// ESC → close the whole marketplace. Without this override the default
+	// ingame ESC handler would pop up the pause menu behind us.
+	override bool OnKeyPress(Widget w, int x, int y, int key)
+	{
+		super.OnKeyPress(w, x, y, key);
+		if (key == KeyCode.KC_ESCAPE)
+		{
+			Close();
+			return true;
+		}
+		return false;
+	}
+
+	// Actual cleanup — called by the UIManager when the menu is being removed
+	// (user pressed close, ESC, or Close() was called explicitly).
 	override void OnShow()
 	{
 		super.OnShow();
@@ -154,18 +186,16 @@ class DME_AH_AuctionMenu : UIScriptedMenu
 		g_Game.GetMission().GetHud().Show(false);
 	}
 
-	override void OnHide()
+	void ~DME_AH_AuctionMenu()
 	{
-		super.OnHide();
-
 		if (!g_Game)
 			return;
 
 		PPEffects.SetBlurMenu(0);
 		g_Game.GetInput().ResetGameFocus();
 		g_Game.GetUIManager().ShowUICursor(false);
-		g_Game.GetMission().GetHud().Show(true);
-		Close();
+		if (g_Game.GetMission() && g_Game.GetMission().GetHud())
+			g_Game.GetMission().GetHud().Show(true);
 	}
 
 	override bool OnClick(Widget w, int x, int y, int button)
@@ -195,9 +225,11 @@ class DME_AH_AuctionMenu : UIScriptedMenu
 			SwitchTab(EDME_AH_MenuTab.MyBids);
 			return true;
 		}
-		if (w == m_BtnTabSellItem)
+
+		// Header "SELL ITEM" button — opens the dedicated sell layout on top.
+		if (w == m_BtnSellItem)
 		{
-			SwitchTab(EDME_AH_MenuTab.SellItem);
+			OpenSellMenu();
 			return true;
 		}
 
@@ -241,10 +273,7 @@ class DME_AH_AuctionMenu : UIScriptedMenu
 		// Listing selection
 		if (w == m_LstListings)
 		{
-			if (m_CurrentTab == EDME_AH_MenuTab.SellItem)
-				OnInventoryItemSelected();
-			else
-				OnListingSelected();
+			OnListingSelected();
 			return true;
 		}
 
@@ -271,12 +300,6 @@ class DME_AH_AuctionMenu : UIScriptedMenu
 			return true;
 		}
 
-		if (w == m_BtnSellSelected)
-		{
-			OpenCreateListingDialog();
-			return true;
-		}
-
 		return false;
 	}
 
@@ -289,17 +312,12 @@ class DME_AH_AuctionMenu : UIScriptedMenu
 			m_DetailPanel.Hide();
 		UpdateTabHighlight();
 
-		if (m_BtnSellSelected)
-			m_BtnSellSelected.Show(tab == EDME_AH_MenuTab.SellItem);
-
 		if (tab == EDME_AH_MenuTab.Marketplace)
 			RequestListings();
 		else if (tab == EDME_AH_MenuTab.MyListings)
 			RequestMyListings();
 		else if (tab == EDME_AH_MenuTab.MyBids)
 			RequestMyBids();
-		else if (tab == EDME_AH_MenuTab.SellItem)
-			PopulateInventoryList();
 	}
 
 	protected void UpdateTabHighlight()
@@ -327,13 +345,6 @@ class DME_AH_AuctionMenu : UIScriptedMenu
 			if (m_CurrentTab == EDME_AH_MenuTab.MyBids)
 				mbColor = activeColor;
 			m_BtnTabMyBids.SetTextColor(mbColor);
-		}
-		if (m_BtnTabSellItem)
-		{
-			int siColor = inactiveColor;
-			if (m_CurrentTab == EDME_AH_MenuTab.SellItem)
-				siColor = activeColor;
-			m_BtnTabSellItem.SetTextColor(siColor);
 		}
 	}
 
@@ -477,83 +488,10 @@ class DME_AH_AuctionMenu : UIScriptedMenu
 		SendCancelListing(row.ListingID);
 	}
 
-	// --- Sell Item Tab ---
-	protected ref array<EntityAI> m_InventoryItems;
-
-	protected void PopulateInventoryList()
+	// Opens the full-screen sell menu as a separate scripted menu on top of this one.
+	// Inventory list + preview + price/duration fields all live in that menu's own layout.
+	protected void OpenSellMenu()
 	{
-		if (!m_LstListings)
-			return;
-		if (!g_Game)
-			return;
-
-		m_LstListings.ClearItems();
-		m_ListingRows.Clear();
-
-		if (!m_InventoryItems)
-			m_InventoryItems = new array<EntityAI>;
-		m_InventoryItems.Clear();
-
-		Man player = g_Game.GetPlayer();
-		if (!player)
-			return;
-
-		array<EntityAI> items = new array<EntityAI>;
-		player.GetInventory().EnumerateInventory(InventoryTraversalType.PREORDER, items);
-
-		for (int i = 0; i < items.Count(); i++)
-		{
-			EntityAI item = items[i];
-			if (!item)
-				continue;
-			if (item == player)
-				continue;
-
-			string displayName = item.GetDisplayName();
-			if (displayName == "")
-				displayName = item.GetType();
-
-			string className = item.GetType();
-			m_InventoryItems.Insert(item);
-
-			string displayStr = displayName + "    (" + className + ")";
-			m_LstListings.AddItem(displayStr, null, 0);
-		}
-
-		UpdatePageInfo();
-	}
-
-	protected void OnInventoryItemSelected()
-	{
-		// Row click only marks the selection — user must press "Sell Selected Item" to open the dialog.
-		if (!m_LstListings || !m_InventoryItems)
-			return;
-
-		int selectedRow = m_LstListings.GetSelectedRow();
-		if (selectedRow < 0 || selectedRow >= m_InventoryItems.Count())
-			return;
-
-		EntityAI selectedItem = m_InventoryItems[selectedRow];
-		if (selectedItem)
-			DME_AH_Logger.Info("Selected inventory item: " + selectedItem.GetType());
-	}
-
-	protected void OpenCreateListingDialog()
-	{
-		if (!m_LstListings || !m_InventoryItems)
-			return;
-
-		int selectedRow = m_LstListings.GetSelectedRow();
-		if (selectedRow < 0 || selectedRow >= m_InventoryItems.Count())
-		{
-			DME_AH_NotificationHandler.ShowNotification("No Item Selected", "Select an item from your inventory first.");
-			return;
-		}
-
-		EntityAI selectedItem = m_InventoryItems[selectedRow];
-		if (!selectedItem)
-			return;
-
 		if (!g_Game)
 			return;
 		UIManager uiManager = g_Game.GetUIManager();
@@ -563,10 +501,7 @@ class DME_AH_AuctionMenu : UIScriptedMenu
 		UIScriptedMenu menu = uiManager.EnterScriptedMenu(MENU_DME_AH_CREATE_LISTING, null);
 		DME_AH_CreateListingDialog dialog;
 		if (Class.CastTo(dialog, menu))
-		{
 			dialog.SetParentMenu(this);
-			dialog.SetSelectedItem(selectedItem);
-		}
 	}
 
 	// --- RPC Sending (Native ScriptRPC) ---
@@ -719,6 +654,11 @@ class DME_AH_AuctionMenu : UIScriptedMenu
 		m_PlayerBalance = balance;
 		if (m_TxtBalance)
 			m_TxtBalance.SetText("Balance: " + balance.ToString());
+	}
+
+	int GetPlayerBalance()
+	{
+		return m_PlayerBalance;
 	}
 
 	void OnReceiveCallback(int resultCode, string data)
