@@ -62,18 +62,17 @@ class DME_AH_NPCSpawner
 		obj.SetPosition(position);
 		obj.SetOrientation(orientation);
 
-		// Apply loadout
+		// Apply loadout. Each entry can be either:
+		//   - a regular DayZ classname (e.g. "GorkaEJacket_Autumn"), spawned as one item, or
+		//   - the name of an Expansion loadout JSON in $profile:ExpansionMod/Loadouts/
+		//     (e.g. "LoadoutSurvivor"), in which case we hand off to Expansion.
+		// If Expansion is not loaded, only the classname path is available.
 		EntityAI entity = EntityAI.Cast(obj);
 		if (entity && entry.Loadout)
 		{
 			for (int i = 0; i < entry.Loadout.Count(); i++)
 			{
-				string itemClass = entry.Loadout[i];
-				EntityAI item = entity.GetInventory().CreateInInventory(itemClass);
-				if (!item)
-				{
-					DME_AH_Logger.Warning("NPC ID " + entry.ID.ToString() + ": Failed to apply loadout item " + itemClass);
-				}
+				ApplyLoadoutEntry(entity, entry.Loadout[i], entry.ID);
 			}
 		}
 
@@ -84,6 +83,32 @@ class DME_AH_NPCSpawner
 		string posStr = position[0].ToString() + " " + position[1].ToString() + " " + position[2].ToString();
 		DME_AH_Logger.Info("NPC spawned: ID " + entry.ID.ToString() + " (" + entry.DisplayName + ") at " + posStr);
 		return obj;
+	}
+
+	// Tries Expansion loadout first (if Expansion is loaded AND a matching JSON
+	// exists in $profile:ExpansionMod/Loadouts/<name>.json). Falls back to
+	// spawning <name> as a vanilla DayZ classname.
+	protected static void ApplyLoadoutEntry(EntityAI entity, string entryName, int npcID)
+	{
+		if (!entity || entryName == "")
+			return;
+
+		#ifdef EXPANSIONMODCORE
+		string loadoutPath = EXPANSION_LOADOUT_FOLDER + entryName + ".json";
+		if (FileExist(loadoutPath))
+		{
+			if (ExpansionHumanLoadout.Apply(entity, entryName))
+			{
+				DME_AH_Logger.Info("NPC ID " + npcID.ToString() + ": applied Expansion loadout '" + entryName + "'");
+				return;
+			}
+			DME_AH_Logger.Warning("NPC ID " + npcID.ToString() + ": Expansion loadout '" + entryName + "' file exists but Apply failed, treating as classname");
+		}
+		#endif
+
+		EntityAI item = entity.GetInventory().CreateInInventory(entryName);
+		if (!item)
+			DME_AH_Logger.Warning("NPC ID " + npcID.ToString() + ": Failed to apply loadout item " + entryName);
 	}
 
 	static bool IsAuctionNPC(Object obj)
