@@ -127,7 +127,9 @@ class DME_AH_RPCHandler
 		int result = EDME_AH_ResultCode.FailedServerError;
 
 		// Resolve the entity from NetworkID, validate ownership + no attachments/cargo
-		Object obj = GetGame().GetObjectByNetworkId(networkLow, networkHigh);
+		Object obj = null;
+		if (g_Game)
+			obj = g_Game.GetObjectByNetworkId(networkLow, networkHigh);
 		EntityAI item;
 		if (!Class.CastTo(item, obj))
 		{

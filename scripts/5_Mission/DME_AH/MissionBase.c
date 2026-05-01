@@ -4,9 +4,7 @@ modded class MissionBase
 {
 	override UIScriptedMenu CreateScriptedMenu(int id)
 	{
-		UIScriptedMenu menu = super.CreateScriptedMenu(id);
-		if (menu)
-			return menu;
+		UIScriptedMenu menu = null;
 
 		switch (id)
 		{
@@ -16,6 +14,15 @@ modded class MissionBase
 			case MENU_DME_AH_CREATE_LISTING:
 				menu = new DME_AH_CreateListingDialog;
 				break;
+		}
+
+		if (menu)
+		{
+			menu.SetID(id);
+		}
+		else
+		{
+			menu = super.CreateScriptedMenu(id);
 		}
 
 		return menu;
