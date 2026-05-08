@@ -110,8 +110,45 @@ ein anderer Phase-1-Agent bricht: STOPPEN und im Result-Bericht "ESCALATION:" ma
 - [x] Phase 1A (Sortier-Header)
 - [x] Phase 1B (Tooltip)
 - [x] Phase 1C (Kategorie-Tree)
-- [ ] Phase 2 (Detail-Panel-Upgrade) — laeuft als naechstes
-- [ ] Phase 3 (Item-Preview in Listing-Row) — sequentiell
+- [x] Phase 2 (Detail-Panel-Upgrade)
+- [x] Phase 3 (Item-Preview in Listing-Row)
+
+## Phase 2 — Integration Notes
+
+`auction_menu.layout` DetailPanel-Sektion erweitert um drei neue Widget-Bloecke:
+- `HealthBar` (y 0.37, color-fill `0 0.8 0 1`)
+- `QuantityBar` (y 0.40, color-fill `0.2 0.6 0.8 1`)
+- `CargoGrid` (y 0.43, Text-Label fuer Cargo-Count)
+
+Bestehende Widgets (txtDetailSeller/Type/Price/BuyNow/Bids/Time, BidSection, Buttons) wurden nach unten verschoben + Buttons leicht kompaktiert, damit btnCloseDetail bei y=0.93 noch ins 0.775-Panel passt.
+
+`DME_AH_DetailPanel.c` erweitert um 8 neue Widget-Member, `UpdateHealthBar()`/`UpdateQuantityBar()`/`UpdateCargoGrid()`, `ComputeHealthStageString()` (re-implementiert, unabhaengig vom ItemTooltip).
+
+## Phase 3 — Integration Notes
+
+Refactor von `TextListboxWidget`-Render-Pfad auf per-row Layout-Widgets:
+
+- `auction_menu_listing_row.layout` upgegradet zu `ButtonWidgetClass ListingRow` (klickbare Wurzel) mit neuem `ItemPreviewWidget itemPreviewRow` (46x46 Pixel, `hexactsize/vexactsize 1`, links vor txtRowItem). Row-Hoehe 0.05 -> 0.06.
+- `auction_menu.layout` ListContainer: `TextListboxWidget lstListings` ersetzt durch `ScrollWidget listingsScroller` mit `PanelWidget listingsListRoot` (`Size To Content V 1`).
+- Neue Klasse `DME_AH_ListingRowWidget` (5_Mission): instantiiert pro Row das Layout, bindet Sub-Widgets, erstellt `m_PreviewEntity` (lokal, NOLIFETIME), Destroy() raeumt Entity + Widget auf.
+- `DME_AH_AuctionMenu`: `m_LstListings` + `OnListingSelected` entfernt; `m_ListingsListRoot` + `m_ListingRowWidgets` + `OnRowClicked()` neu. `OnReceiveListings` instantiiert per DME_AH_ListingRow ein DME_AH_ListingRowWidget. OnClick() forwarded Klicks an alle Row-Widgets vor den Detail-Panel-Branches. Tooltip-Trigger weiterhin in OnRowClicked.
+
+## Final Compliance Check (alle Phasen)
+
+- [x] Keine `Expansion`/`JM_`/`CF_`-Tokens in irgendeiner neuen oder geaenderten Datei.
+- [x] Kein `string.ToLower()`-Returnwert-Assignment.
+- [x] Keine `ref` als Methodenparameter.
+- [x] Kein neues `requiredAddons` ausser DZ_Data.
+- [x] Alle neuen Klassen + Layouts mit `DME_AH_`-Prefix.
+- [x] `DME_AH_AuctionMenu.c` Top-Level-Klammern balanciert (2 Klassen).
+- [x] Listings-Listbox -> Scroller refactor: m_LstListings nirgends mehr referenziert.
+
+## Bekannte Punkte (nicht-blockierend)
+
+- `auction_menu_subcategory.layout` + `DME_AH_SubCategoryElement.c` sind ausgeliefert aber inert: DME_AH_Category hat kein `ParentID`. Sinnvoll ergaenzen wenn echtes Subkategorie-Datenmodell ueberhaupt gewuenscht.
+- `auction_menu_detail_panel.layout` (separate Datei) bleibt unbenutzt — Detail-Panel lebt inline in auction_menu.layout. Nicht durch Phase 2 angefasst.
+- Sortpfeile im Listings-Header sind ASCII (`^`/`v`) statt Unicode-Pfeile (DayZ-Font-Kompatibilitaet).
+- Tooltip triggert bei Row-Click (per-row hover braucht eigene Hover-Events am ButtonWidget — nicht im Spec, aber jetzt technisch moeglich).
 
 ## Phase 1 — Integration Notes
 

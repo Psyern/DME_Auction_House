@@ -218,11 +218,21 @@ PanelWidgetClass RootPanel {
      style DayZDefaultPanel
      ignorepointer 0
      {
-      TextListboxWidgetClass lstListings {
+      ScrollWidgetClass listingsScroller {
        position 0 0
        size 1 1
-       font "gui/fonts/metron16"
-       color 0.8 0.8 0.8 1
+       style "blank"
+       "Scrollbar V" 1
+       ignorepointer 0
+       {
+        PanelWidgetClass listingsListRoot {
+         position 0 0
+         size 1 1
+         color 0 0 0 0
+         "Size To Content V" 1
+         ignorepointer 0
+        }
+       }
       }
      }
     }

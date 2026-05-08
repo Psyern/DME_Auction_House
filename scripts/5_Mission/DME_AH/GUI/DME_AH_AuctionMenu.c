@@ -44,7 +44,8 @@ class DME_AH_AuctionMenu : UIScriptedMenu
 	protected ButtonWidget m_BtnSortTime;
 
 	// Listings
-	protected TextListboxWidget m_LstListings;
+	protected Widget m_ListingsListRoot;
+	protected ref array<ref DME_AH_ListingRowWidget> m_ListingRowWidgets;
 	protected TextWidget m_TxtBalance;
 	protected TextWidget m_TxtPageInfo;
 	protected ButtonWidget m_BtnPrevPage;
@@ -90,6 +91,7 @@ class DME_AH_AuctionMenu : UIScriptedMenu
 		m_CurrentSortMode = EDME_AH_SortMode.NewestFirst;
 		m_PlayerBalance = 0;
 		m_ListingRows = new array<ref DME_AH_ListingRow>;
+		m_ListingRowWidgets = new array<ref DME_AH_ListingRowWidget>;
 		m_CategoryComboIDs = new array<int>;
 		m_CategoryElements = new array<ref DME_AH_CategoryElement>;
 		m_SelectedCategoryID = 0;
@@ -118,7 +120,7 @@ class DME_AH_AuctionMenu : UIScriptedMenu
 		m_BtnSortTime = ButtonWidget.Cast(layoutRoot.FindAnyWidget("btnSortTime"));
 
 		// Listings
-		m_LstListings = TextListboxWidget.Cast(layoutRoot.FindAnyWidget("lstListings"));
+		m_ListingsListRoot = layoutRoot.FindAnyWidget("listingsListRoot");
 		m_TxtBalance = TextWidget.Cast(layoutRoot.FindAnyWidget("txtBalance"));
 		m_TxtPageInfo = TextWidget.Cast(layoutRoot.FindAnyWidget("txtPageInfo"));
 		m_BtnPrevPage = ButtonWidget.Cast(layoutRoot.FindAnyWidget("btnPrevPage"));
@@ -305,11 +307,15 @@ class DME_AH_AuctionMenu : UIScriptedMenu
 			return true;
 		}
 
-		// Listing selection
-		if (w == m_LstListings)
+		// Listing selection — forward clicks to row widgets
+		if (m_ListingRowWidgets)
 		{
-			OnListingSelected();
-			return true;
+			for (int rw = 0; rw < m_ListingRowWidgets.Count(); rw++)
+			{
+				DME_AH_ListingRowWidget rowWidget = m_ListingRowWidgets[rw];
+				if (rowWidget && rowWidget.OnClick(w, x, y, button))
+					return true;
+			}
 		}
 
 		// Detail panel buttons
@@ -621,16 +627,12 @@ class DME_AH_AuctionMenu : UIScriptedMenu
 	}
 
 	// --- Listing Selection ---
-	protected void OnListingSelected()
+	void OnRowClicked(DME_AH_ListingRowWidget rowWidget)
 	{
-		if (!m_LstListings || !m_DetailPanel)
+		if (!rowWidget || !m_DetailPanel)
 			return;
 
-		int selectedRow = m_LstListings.GetSelectedRow();
-		if (selectedRow < 0 || selectedRow >= m_ListingRows.Count())
-			return;
-
-		DME_AH_ListingRow row = m_ListingRows[selectedRow];
+		DME_AH_ListingRow row = rowWidget.GetRow();
 		if (!row)
 			return;
 
@@ -639,18 +641,6 @@ class DME_AH_AuctionMenu : UIScriptedMenu
 			int mx, my;
 			GetMousePos(mx, my);
 			m_ItemTooltip.ShowFor(row, mx, my);
-		}
-
-		string playerUID = "";
-		if (g_Game)
-		{
-			PlayerBase player = PlayerBase.Cast(g_Game.GetPlayer());
-			if (player)
-			{
-				PlayerIdentity identity = player.GetIdentity();
-				if (identity)
-					playerUID = identity.GetPlainId();
-			}
 		}
 
 		bool isOwn = false;
@@ -810,8 +800,16 @@ class DME_AH_AuctionMenu : UIScriptedMenu
 		m_CurrentPage = page;
 		m_ListingRows.Clear();
 
-		if (m_LstListings)
-			m_LstListings.ClearItems();
+		if (m_ListingRowWidgets)
+		{
+			for (int rwc = 0; rwc < m_ListingRowWidgets.Count(); rwc++)
+			{
+				DME_AH_ListingRowWidget oldWidget = m_ListingRowWidgets[rwc];
+				if (oldWidget)
+					oldWidget.Destroy();
+			}
+			m_ListingRowWidgets.Clear();
+		}
 
 		if (listingsData == "")
 			return;
@@ -847,10 +845,11 @@ class DME_AH_AuctionMenu : UIScriptedMenu
 
 			m_ListingRows.Insert(row);
 
-			if (m_LstListings)
+			if (m_ListingsListRoot && m_ListingRowWidgets)
 			{
-				string displayStr = row.ItemName + "    " + row.Price.ToString() + "    " + row.GetTypeString() + "    " + row.SellerName + "    " + row.GetTimeRemainingString();
-				m_LstListings.AddItem(displayStr, null, 0);
+				DME_AH_ListingRowWidget rowW = new DME_AH_ListingRowWidget();
+				rowW.Init(m_ListingsListRoot, row, this);
+				m_ListingRowWidgets.Insert(rowW);
 			}
 		}
 
