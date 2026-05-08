@@ -551,6 +551,10 @@ class DME_AH_AuctionManager
 					shouldSwap = a.ExpiresTimestamp > b.ExpiresTimestamp;
 				else if (sortMode == EDME_AH_SortMode.TimeDesc)
 					shouldSwap = a.ExpiresTimestamp < b.ExpiresTimestamp;
+				else if (sortMode == EDME_AH_SortMode.SellerAsc)
+					shouldSwap = a.SellerName > b.SellerName;
+				else if (sortMode == EDME_AH_SortMode.SellerDesc)
+					shouldSwap = a.SellerName < b.SellerName;
 				else if (sortMode == EDME_AH_SortMode.NewestFirst)
 					shouldSwap = a.CreatedTimestamp < b.CreatedTimestamp;
 

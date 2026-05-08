@@ -1,0 +1,51 @@
+PanelWidgetClass TooltipEntryRoot {
+ position 0 0
+ size 1 0.06
+ hexactpos 0
+ vexactpos 0
+ hexactsize 0
+ vexactsize 0
+ color 0 0 0 0
+ {
+  ImageWidgetClass imgIcon {
+   position 0 0
+   size 24 24
+   hexactpos 0
+   vexactpos 0
+   hexactsize 1
+   vexactsize 1
+   color 1 1 1 1
+   image0 ""
+   "stretch mode" stretch_w_h
+   "clamp mode" clamp
+  }
+  TextWidgetClass txtLabel {
+   position 30 0
+   size 0.55 1
+   hexactpos 1
+   vexactpos 0
+   hexactsize 0
+   vexactsize 0
+   font "gui/fonts/metron16"
+   color 0.8 0.8 0.8 1
+   text "Label"
+   "text halign" left
+   "text valign" center
+   "exact text" 1
+  }
+  TextWidgetClass txtValue {
+   position 0.6 0
+   size 0.4 1
+   hexactpos 0
+   vexactpos 0
+   hexactsize 0
+   vexactsize 0
+   font "gui/fonts/metron16"
+   color 1 1 1 1
+   text "Value"
+   "text halign" right
+   "text valign" center
+   "exact text" 1
+  }
+ }
+}

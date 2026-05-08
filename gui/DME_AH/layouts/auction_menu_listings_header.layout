@@ -1,0 +1,115 @@
+PanelWidgetClass ListingsHeaderRoot {
+ position 0 0
+ size 1 1
+ hexactpos 0
+ vexactpos 0
+ hexactsize 0
+ vexactsize 0
+ color 0.08 0.08 0.08 1
+ style DayZDefaultPanel
+ {
+  ButtonWidgetClass btnHeaderName {
+   position 0 0
+   size 0.3 1
+   text "  Item"
+   font "gui/fonts/metron16bold"
+   color 1 0.5 0 1
+   "text halign" left
+   "text valign" center
+   "exact text" 1
+   {
+    TextWidgetClass txtArrowName {
+     position 0.86 0
+     size 0.12 1
+     font "gui/fonts/metron16bold"
+     color 1 0.5 0 1
+     text ""
+     "text halign" left
+     "text valign" center
+     "exact text" 1
+     ignorepointer 1
+    }
+   }
+  }
+  ButtonWidgetClass btnHeaderPrice {
+   position 0.3 0
+   size 0.15 1
+   text "Price"
+   font "gui/fonts/metron16bold"
+   color 1 0.5 0 1
+   "text halign" center
+   "text valign" center
+   "exact text" 1
+   {
+    TextWidgetClass txtArrowPrice {
+     position 0.78 0
+     size 0.2 1
+     font "gui/fonts/metron16bold"
+     color 1 0.5 0 1
+     text ""
+     "text halign" left
+     "text valign" center
+     "exact text" 1
+     ignorepointer 1
+    }
+   }
+  }
+  TextWidgetClass txtHeaderTypeStatic {
+   position 0.45 0
+   size 0.15 1
+   font "gui/fonts/metron16bold"
+   color 0.6 0.6 0.6 1
+   text "Type"
+   "text halign" center
+   "text valign" center
+   "exact text" 1
+   ignorepointer 1
+  }
+  ButtonWidgetClass btnHeaderSeller {
+   position 0.6 0
+   size 0.2 1
+   text "Seller"
+   font "gui/fonts/metron16bold"
+   color 1 0.5 0 1
+   "text halign" center
+   "text valign" center
+   "exact text" 1
+   {
+    TextWidgetClass txtArrowSeller {
+     position 0.84 0
+     size 0.14 1
+     font "gui/fonts/metron16bold"
+     color 1 0.5 0 1
+     text ""
+     "text halign" left
+     "text valign" center
+     "exact text" 1
+     ignorepointer 1
+    }
+   }
+  }
+  ButtonWidgetClass btnHeaderTime {
+   position 0.8 0
+   size 0.2 1
+   text "Time Left"
+   font "gui/fonts/metron16bold"
+   color 1 0.5 0 1
+   "text halign" center
+   "text valign" center
+   "exact text" 1
+   {
+    TextWidgetClass txtArrowTime {
+     position 0.86 0
+     size 0.12 1
+     font "gui/fonts/metron16bold"
+     color 1 0.5 0 1
+     text ""
+     "text halign" left
+     "text valign" center
+     "exact text" 1
+     ignorepointer 1
+    }
+   }
+  }
+ }
+}

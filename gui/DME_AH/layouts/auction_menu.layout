@@ -98,6 +98,7 @@ PanelWidgetClass RootPanel {
        position 0.36 0
        size 0.2 1
        font "gui/fonts/metron16"
+       visible 0
       }
       ButtonWidgetClass btnSortPrice {
        position 0.57 0
@@ -122,9 +123,34 @@ PanelWidgetClass RootPanel {
       }
      }
     }
-    PanelWidgetClass ListHeader {
+    PanelWidgetClass CategorySidebar {
      position 0.02 0.165
-     size 0.7 0.035
+     size 0.15 0.775
+     color 0.04 0.04 0.04 0.95
+     style DayZDefaultPanel
+     ignorepointer 0
+     {
+      ScrollWidgetClass categoryScroller {
+       position 0 0
+       size 1 1
+       style "blank"
+       "Scrollbar V" 1
+       ignorepointer 0
+       {
+        PanelWidgetClass categoryListRoot {
+         position 0 0
+         size 1 1
+         color 0 0 0 0
+         "Size To Content V" 1
+         ignorepointer 0
+        }
+       }
+      }
+     }
+    }
+    PanelWidgetClass ListHeader {
+     position 0.18 0.165
+     size 0.55 0.035
      color 0.08 0.08 0.08 1
      ignorepointer 1
      {
@@ -186,8 +212,8 @@ PanelWidgetClass RootPanel {
      }
     }
     PanelWidgetClass ListContainer {
-     position 0.02 0.2
-     size 0.7 0.74
+     position 0.18 0.2
+     size 0.55 0.74
      color 0.03 0.03 0.03 0.9
      style DayZDefaultPanel
      ignorepointer 0

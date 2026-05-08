@@ -1,0 +1,44 @@
+PanelWidgetClass SubCategoryRoot {
+ size 1 0.05
+ color 0 0 0 0
+ style DayZDefaultPanel
+ ignorepointer 0
+ {
+  ImageWidgetClass imgSubIcon {
+   position 0.1 0
+   size 20 20
+   hexactpos 0
+   vexactpos 1
+   hexactsize 1
+   vexactsize 1
+   valign center_ref
+   image0 "set:dayz_gui image:icon_gear"
+   ignorepointer 1
+   "src alpha" 1
+   "clamp mode" clamp
+   "stretch mode" stretch_w_h
+  }
+  TextWidgetClass txtSubName {
+   position 0.18 0
+   size 0.55 1
+   font "gui/fonts/metron16"
+   color 0.85 0.85 0.85 1
+   text "Sub"
+   "text halign" left
+   "text valign" center
+   "exact text" 1
+   ignorepointer 0
+  }
+  TextWidgetClass txtSubCount {
+   position 0.7 0
+   size 0.28 1
+   font "gui/fonts/metron16"
+   color 1 0.5 0 1
+   text "0"
+   "text halign" right
+   "text valign" center
+   "exact text" 1
+   ignorepointer 1
+  }
+ }
+}

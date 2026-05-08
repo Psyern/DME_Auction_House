@@ -31,6 +31,8 @@ enum EDME_AH_SortMode
 	NameDesc,
 	TimeAsc,
 	TimeDesc,
+	SellerAsc,
+	SellerDesc,
 	NewestFirst
 }
 

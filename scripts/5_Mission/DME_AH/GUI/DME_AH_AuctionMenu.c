@@ -51,6 +51,9 @@ class DME_AH_AuctionMenu : UIScriptedMenu
 	protected ButtonWidget m_BtnNextPage;
 	protected ButtonWidget m_BtnClose;
 
+	// Listings header (clickable sort)
+	protected ref DME_AH_ListingsHeader m_ListingsHeader;
+
 	// Detail panel
 	protected ref DME_AH_DetailPanel m_DetailPanel;
 	protected Widget m_DetailPanelRoot;
@@ -62,6 +65,9 @@ class DME_AH_AuctionMenu : UIScriptedMenu
 	// Loading
 	protected Widget m_LoadingOverlay;
 
+	// Tooltip
+	protected ref DME_AH_ItemTooltip m_ItemTooltip;
+
 	// State
 	protected int m_CurrentTab;
 	protected int m_CurrentPage;
@@ -71,6 +77,10 @@ class DME_AH_AuctionMenu : UIScriptedMenu
 	protected ref array<ref DME_AH_ListingRow> m_ListingRows;
 	// Maps category-combo index -> categoryID (index 0 == 0 == All)
 	protected ref array<int> m_CategoryComboIDs;
+	// Sidebar category tree. m_SelectedCategoryID is the truth source;
+	// the (now hidden) combo is mirrored only for the legacy RequestListings path.
+	protected ref array<ref DME_AH_CategoryElement> m_CategoryElements;
+	protected int m_SelectedCategoryID;
 
 	void DME_AH_AuctionMenu()
 	{
@@ -81,6 +91,8 @@ class DME_AH_AuctionMenu : UIScriptedMenu
 		m_PlayerBalance = 0;
 		m_ListingRows = new array<ref DME_AH_ListingRow>;
 		m_CategoryComboIDs = new array<int>;
+		m_CategoryElements = new array<ref DME_AH_CategoryElement>;
+		m_SelectedCategoryID = 0;
 	}
 
 	override Widget Init()
@@ -126,7 +138,14 @@ class DME_AH_AuctionMenu : UIScriptedMenu
 		m_LoadingOverlay = layoutRoot.FindAnyWidget("LoadingOverlay");
 
 		PopulateCategoryCombo();
+		PopulateCategorySidebar();
 		UpdateTabHighlight();
+
+		m_ListingsHeader = new DME_AH_ListingsHeader();
+		m_ListingsHeader.Init(layoutRoot.FindAnyWidget("ListHeader"), this);
+
+		m_ItemTooltip = new DME_AH_ItemTooltip();
+		m_ItemTooltip.Init(layoutRoot);
 
 		m_RPCListener = new DME_AH_AuctionMenuListener(this);
 		DME_AH_RPCQueue.SetListener(m_RPCListener);
@@ -191,6 +210,9 @@ class DME_AH_AuctionMenu : UIScriptedMenu
 		if (!g_Game)
 			return;
 
+		if (m_ItemTooltip)
+			m_ItemTooltip.Hide();
+
 		PPEffects.SetBlurMenu(0);
 		g_Game.GetInput().ResetGameFocus();
 		g_Game.GetUIManager().ShowUICursor(false);
@@ -201,6 +223,19 @@ class DME_AH_AuctionMenu : UIScriptedMenu
 	override bool OnClick(Widget w, int x, int y, int button)
 	{
 		super.OnClick(w, x, y, button);
+
+		if (m_ListingsHeader && m_ListingsHeader.OnClick(w, x, y, button))
+			return true;
+
+		if (m_CategoryElements)
+		{
+			for (int ce = 0; ce < m_CategoryElements.Count(); ce++)
+			{
+				DME_AH_CategoryElement elemClick = m_CategoryElements[ce];
+				if (elemClick && elemClick.OnClick(w, x, y, button))
+					return true;
+			}
+		}
 
 		// Close
 		if (w == m_BtnClose)
@@ -310,6 +345,8 @@ class DME_AH_AuctionMenu : UIScriptedMenu
 		m_CurrentPage = 0;
 		if (m_DetailPanel)
 			m_DetailPanel.Hide();
+		if (m_ItemTooltip)
+			m_ItemTooltip.Hide();
 		UpdateTabHighlight();
 
 		if (tab == EDME_AH_MenuTab.Marketplace)
@@ -432,6 +469,13 @@ class DME_AH_AuctionMenu : UIScriptedMenu
 		DME_AH_ListingRow row = m_ListingRows[selectedRow];
 		if (!row)
 			return;
+
+		if (m_ItemTooltip)
+		{
+			int mx, my;
+			GetMousePos(mx, my);
+			m_ItemTooltip.ShowFor(row, mx, my);
+		}
 
 		string playerUID = "";
 		if (g_Game)
