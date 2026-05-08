@@ -248,8 +248,77 @@ PanelWidgetClass RootPanel {
        position 0.05 0.06
        size 0.9 0.3
       }
-      TextWidgetClass txtDetailSeller {
+      PanelWidgetClass HealthBar {
        position 0.03 0.37
+       size 0.94 0.025
+       color 0.15 0.15 0.15 1
+       ignorepointer 1
+       {
+        PanelWidgetClass healthBarFill {
+         position 0 0
+         size 1 1
+         color 0 0.8 0 1
+         ignorepointer 1
+        }
+        TextWidgetClass txtHealthLabel {
+         position 0.02 0
+         size 0.96 1
+         font "gui/fonts/metron16"
+         color 1 1 1 1
+         text "Health: -"
+         "text halign" left
+         "text valign" center
+         "exact text" 1
+         ignorepointer 1
+        }
+       }
+      }
+      PanelWidgetClass QuantityBar {
+       position 0.03 0.4
+       size 0.94 0.025
+       color 0.15 0.15 0.15 1
+       ignorepointer 1
+       {
+        PanelWidgetClass quantityBarFill {
+         position 0 0
+         size 1 1
+         color 0.2 0.6 0.8 1
+         ignorepointer 1
+        }
+        TextWidgetClass txtQuantityLabel {
+         position 0.02 0
+         size 0.96 1
+         font "gui/fonts/metron16"
+         color 1 1 1 1
+         text "Quantity: -"
+         "text halign" left
+         "text valign" center
+         "exact text" 1
+         ignorepointer 1
+        }
+       }
+      }
+      PanelWidgetClass CargoGrid {
+       position 0.03 0.43
+       size 0.94 0.04
+       color 0.1 0.1 0.1 1
+       ignorepointer 1
+       {
+        TextWidgetClass txtCargoLabel {
+         position 0.02 0
+         size 0.96 1
+         font "gui/fonts/metron16"
+         color 0.8 0.8 0.8 1
+         text "Cargo: -"
+         "text halign" left
+         "text valign" center
+         "exact text" 1
+         ignorepointer 1
+        }
+       }
+      }
+      TextWidgetClass txtDetailSeller {
+       position 0.03 0.48
        size 0.94 0.035
        font "gui/fonts/metron16"
        color 0.6 0.6 0.6 1
@@ -260,7 +329,7 @@ PanelWidgetClass RootPanel {
        ignorepointer 1
       }
       TextWidgetClass txtDetailType {
-       position 0.03 0.41
+       position 0.03 0.52
        size 0.94 0.035
        font "gui/fonts/metron16"
        color 0.2 0.6 0.8 1
@@ -271,7 +340,7 @@ PanelWidgetClass RootPanel {
        ignorepointer 1
       }
       TextWidgetClass txtDetailPrice {
-       position 0.03 0.45
+       position 0.03 0.56
        size 0.94 0.04
        font "gui/fonts/metron16bold"
        color 0 0.8 0 1
@@ -282,7 +351,7 @@ PanelWidgetClass RootPanel {
        ignorepointer 1
       }
       TextWidgetClass txtDetailBuyNow {
-       position 0.03 0.495
+       position 0.03 0.605
        size 0.94 0.035
        font "gui/fonts/metron16"
        color 1 0.5 0 1
@@ -293,7 +362,7 @@ PanelWidgetClass RootPanel {
        ignorepointer 1
       }
       TextWidgetClass txtDetailBids {
-       position 0.03 0.535
+       position 0.03 0.645
        size 0.94 0.035
        font "gui/fonts/metron16"
        color 0.8 0.8 0.8 1
@@ -304,7 +373,7 @@ PanelWidgetClass RootPanel {
        ignorepointer 1
       }
       TextWidgetClass txtDetailTime {
-       position 0.03 0.575
+       position 0.03 0.685
        size 0.94 0.035
        font "gui/fonts/metron16"
        color 0.8 0.6 0 1
@@ -315,8 +384,8 @@ PanelWidgetClass RootPanel {
        ignorepointer 1
       }
       PanelWidgetClass BidSection {
-       position 0.03 0.63
-       size 0.94 0.06
+       position 0.03 0.725
+       size 0.94 0.055
        visible 0
        ignorepointer 0
        {
@@ -336,24 +405,24 @@ PanelWidgetClass RootPanel {
        }
       }
       ButtonWidgetClass btnBuyNow {
-       position 0.03 0.71
-       size 0.94 0.07
+       position 0.03 0.79
+       size 0.94 0.05
        visible 0
        text "BUY NOW"
        font "gui/fonts/metron16bold"
        color 0 0.8 0 1
       }
       ButtonWidgetClass btnCancelListing {
-       position 0.03 0.8
-       size 0.94 0.06
+       position 0.03 0.85
+       size 0.94 0.045
        visible 0
        text "CANCEL LISTING"
        font "gui/fonts/metron16bold"
        color 0.8 0 0 1
       }
       ButtonWidgetClass btnCloseDetail {
-       position 0.03 0.9
-       size 0.94 0.06
+       position 0.03 0.93
+       size 0.94 0.055
        text "Close"
        font "gui/fonts/metron16"
        color 0.6 0.6 0.6 1

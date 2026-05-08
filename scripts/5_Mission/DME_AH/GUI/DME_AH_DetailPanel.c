@@ -16,6 +16,15 @@ class DME_AH_DetailPanel
 	protected ButtonWidget m_BtnCancelListing;
 	protected EditBoxWidget m_EditBidAmount;
 
+	protected Widget m_HealthBar;
+	protected Widget m_HealthBarFill;
+	protected TextWidget m_TxtHealthLabel;
+	protected Widget m_QuantityBar;
+	protected Widget m_QuantityBarFill;
+	protected TextWidget m_TxtQuantityLabel;
+	protected Widget m_CargoGrid;
+	protected TextWidget m_TxtCargoLabel;
+
 	protected ref DME_AH_ListingRow m_CurrentRow;
 	// Client-only preview entity spawned to populate m_ItemPreview.
 	// Must be deleted in Hide() to avoid leaks.
@@ -39,6 +48,15 @@ class DME_AH_DetailPanel
 		m_BtnBuyNow = ButtonWidget.Cast(m_Root.FindAnyWidget("btnBuyNow"));
 		m_BtnCancelListing = ButtonWidget.Cast(m_Root.FindAnyWidget("btnCancelListing"));
 		m_EditBidAmount = EditBoxWidget.Cast(m_Root.FindAnyWidget("editBidAmount"));
+
+		m_HealthBar = m_Root.FindAnyWidget("HealthBar");
+		m_HealthBarFill = m_Root.FindAnyWidget("healthBarFill");
+		m_TxtHealthLabel = TextWidget.Cast(m_Root.FindAnyWidget("txtHealthLabel"));
+		m_QuantityBar = m_Root.FindAnyWidget("QuantityBar");
+		m_QuantityBarFill = m_Root.FindAnyWidget("quantityBarFill");
+		m_TxtQuantityLabel = TextWidget.Cast(m_Root.FindAnyWidget("txtQuantityLabel"));
+		m_CargoGrid = m_Root.FindAnyWidget("CargoGrid");
+		m_TxtCargoLabel = TextWidget.Cast(m_Root.FindAnyWidget("txtCargoLabel"));
 	}
 
 	void Show(DME_AH_ListingRow row, bool isOwnListing)
@@ -67,6 +85,10 @@ class DME_AH_DetailPanel
 				g_Game.ObjectDelete(obj);
 			}
 		}
+
+		UpdateHealthBar();
+		UpdateQuantityBar();
+		UpdateCargoGrid();
 
 		if (m_TxtTitle)
 			m_TxtTitle.SetText(row.ItemName);
@@ -108,8 +130,111 @@ class DME_AH_DetailPanel
 	{
 		if (m_Root)
 			m_Root.Show(false);
+		if (m_HealthBar)
+			m_HealthBar.Show(false);
+		if (m_QuantityBar)
+			m_QuantityBar.Show(false);
+		if (m_CargoGrid)
+			m_CargoGrid.Show(false);
 		m_CurrentRow = null;
 		DestroyPreviewEntity();
+	}
+
+	protected void UpdateHealthBar()
+	{
+		if (!m_HealthBar)
+			return;
+
+		if (!m_PreviewEntity)
+		{
+			m_HealthBar.Show(false);
+			return;
+		}
+
+		float maxHealth = m_PreviewEntity.GetMaxHealth("", "");
+		float pct = 0;
+		if (maxHealth > 0)
+			pct = m_PreviewEntity.GetHealth("", "") / maxHealth;
+		if (pct < 0)
+			pct = 0;
+		if (pct > 1)
+			pct = 1;
+
+		if (m_HealthBarFill)
+			m_HealthBarFill.SetSize(pct, 1);
+
+		if (m_TxtHealthLabel)
+			m_TxtHealthLabel.SetText("Health: " + ComputeHealthStageString(m_PreviewEntity));
+
+		m_HealthBar.Show(true);
+	}
+
+	protected void UpdateQuantityBar()
+	{
+		if (!m_QuantityBar)
+			return;
+
+		ItemBase ib;
+		if (!m_PreviewEntity || !Class.CastTo(ib, m_PreviewEntity) || !ib.HasQuantity())
+		{
+			m_QuantityBar.Show(false);
+			return;
+		}
+
+		float qty = ib.GetQuantity();
+		float qtyMax = ib.GetQuantityMax();
+		float pct = 0;
+		if (qtyMax > 0)
+			pct = qty / qtyMax;
+		if (pct < 0)
+			pct = 0;
+		if (pct > 1)
+			pct = 1;
+
+		if (m_QuantityBarFill)
+			m_QuantityBarFill.SetSize(pct, 1);
+
+		if (m_TxtQuantityLabel)
+			m_TxtQuantityLabel.SetText("Quantity: " + ib.GetQuantity().ToString() + "/" + ib.GetQuantityMax().ToString());
+
+		m_QuantityBar.Show(true);
+	}
+
+	protected void UpdateCargoGrid()
+	{
+		if (!m_CargoGrid)
+			return;
+
+		if (!m_PreviewEntity || !m_PreviewEntity.GetInventory() || !m_PreviewEntity.GetInventory().GetCargo())
+		{
+			m_CargoGrid.Show(false);
+			return;
+		}
+
+		CargoBase cargo = m_PreviewEntity.GetInventory().GetCargo();
+		int count = cargo.GetItemCount();
+		int capacity = cargo.GetWidth() * cargo.GetHeight();
+
+		if (m_TxtCargoLabel)
+			m_TxtCargoLabel.SetText("Cargo: " + count.ToString() + "/" + capacity.ToString());
+
+		m_CargoGrid.Show(true);
+	}
+
+	protected string ComputeHealthStageString(EntityAI entity)
+	{
+		int level = entity.GetHealthLevel();
+		if (level == GameConstants.STATE_PRISTINE)
+			return "Pristine";
+		if (level == GameConstants.STATE_WORN)
+			return "Worn";
+		if (level == GameConstants.STATE_DAMAGED)
+			return "Damaged";
+		if (level == GameConstants.STATE_BADLY_DAMAGED)
+			return "Badly Damaged";
+		if (level == GameConstants.STATE_RUINED)
+			return "Ruined";
+		return "Unknown";
 	}
 
 	protected void DestroyPreviewEntity()
