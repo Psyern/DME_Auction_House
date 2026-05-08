@@ -396,6 +396,62 @@ class DME_AH_AuctionMenu : UIScriptedMenu
 		RequestListings();
 	}
 
+	void Listings_Filter_NameAZ()
+	{
+		m_CurrentSortMode = EDME_AH_SortMode.NameAsc;
+		m_CurrentPage = 0;
+		RequestListings();
+	}
+
+	void Listings_Filter_NameZA()
+	{
+		m_CurrentSortMode = EDME_AH_SortMode.NameDesc;
+		m_CurrentPage = 0;
+		RequestListings();
+	}
+
+	void Listings_Filter_PriceLowHigh()
+	{
+		m_CurrentSortMode = EDME_AH_SortMode.PriceAsc;
+		m_CurrentPage = 0;
+		RequestListings();
+	}
+
+	void Listings_Filter_PriceHighLow()
+	{
+		m_CurrentSortMode = EDME_AH_SortMode.PriceDesc;
+		m_CurrentPage = 0;
+		RequestListings();
+	}
+
+	void Listings_Filter_TimeOldNew()
+	{
+		m_CurrentSortMode = EDME_AH_SortMode.TimeAsc;
+		m_CurrentPage = 0;
+		RequestListings();
+	}
+
+	void Listings_Filter_TimeNewOld()
+	{
+		m_CurrentSortMode = EDME_AH_SortMode.TimeDesc;
+		m_CurrentPage = 0;
+		RequestListings();
+	}
+
+	void Listings_Filter_SellerAZ()
+	{
+		m_CurrentSortMode = EDME_AH_SortMode.SellerAsc;
+		m_CurrentPage = 0;
+		RequestListings();
+	}
+
+	void Listings_Filter_SellerZA()
+	{
+		m_CurrentSortMode = EDME_AH_SortMode.SellerDesc;
+		m_CurrentPage = 0;
+		RequestListings();
+	}
+
 	// --- Category Combo ---
 	protected void PopulateCategoryCombo()
 	{
