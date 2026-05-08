@@ -107,8 +107,29 @@ ein anderer Phase-1-Agent bricht: STOPPEN und im Result-Bericht "ESCALATION:" ma
 ## Status
 
 - [x] Phase 0 (Setup & Kontext)
-- [ ] Phase 1A (Sortier-Header)
-- [ ] Phase 1B (Tooltip)
-- [ ] Phase 1C (Kategorie-Tree)
-- [ ] Phase 2 (Detail-Panel-Upgrade) — sequentiell
+- [x] Phase 1A (Sortier-Header)
+- [x] Phase 1B (Tooltip)
+- [x] Phase 1C (Kategorie-Tree)
+- [ ] Phase 2 (Detail-Panel-Upgrade) — laeuft als naechstes
 - [ ] Phase 3 (Item-Preview in Listing-Row) — sequentiell
+
+## Phase 1 — Integration Notes
+
+Alle drei Phase-1-Agents komplett, Patches integriert in:
+- `scripts/3_Game/DME_AH/Enums/DME_AH_Enums.c` (+ SellerAsc/SellerDesc)
+- `scripts/3_Game/DME_AH/Manager/DME_AH_AuctionManager.c` (+ Seller-Sort-Branches)
+- `scripts/5_Mission/DME_AH/GUI/DME_AH_AuctionMenu.c` (Members, Init-Block, OnClick-Top-Branch, OnListingSelected-Tooltip-Show, SwitchTab/Destruktor-Tooltip-Hide, 8 Listings_Filter_*-Methoden, GetSelectedCategoryID-Replace, PopulateCategorySidebar/RefreshCategoryCounts/SelectCategory, RefreshCategoryCounts-Call in OnReceiveListings)
+
+Neue Dateien:
+- 5 Layouts: auction_menu_listings_header / _tooltip / _tooltip_entry / _category / _subcategory
+- 5 Skripte: DME_AH_ListingsHeader / _ItemTooltip / _ItemTooltipEntry / _CategoryElement / _SubCategoryElement
+
+Layout-Aenderung an `auction_menu.layout`: CategorySidebar eingefuegt; ListHeader/ListContainer x-Position nach rechts geschoben; comboCategory `visible 0` (Bind-Logik bleibt).
+
+Compliance-Checks bestanden:
+- Keine `Expansion`/`JM_`/`CF_`-Tokens in neuen Dateien.
+- Keine `ref` als Methodenparameter, keine `string.ToLower()`-Returnwert-Zuweisung.
+- AuctionMenu.c top-level Klammern balanciert (2 Klassen).
+
+Verbleibende Punkte (vom Phase-1C-Agent eskaliert, nicht-blockierend):
+- `DME_AH_Category` hat kein `ParentID`-Feld. Die `auction_menu_subcategory.layout` + `DME_AH_SubCategoryElement.c` sind ausgeliefert aber INERT (kein Parent-Mapping vorhanden). User-Entscheidung in spaeterer Phase, ob ein `ParentID` zum Datenmodell ergaenzt wird.

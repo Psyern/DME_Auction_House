@@ -491,12 +491,120 @@ class DME_AH_AuctionMenu : UIScriptedMenu
 
 	protected int GetSelectedCategoryID()
 	{
-		if (!m_ComboCategory || !m_CategoryComboIDs)
-			return 0;
-		int idx = m_ComboCategory.GetCurrentItem();
-		if (idx < 0 || idx >= m_CategoryComboIDs.Count())
-			return 0;
-		return m_CategoryComboIDs[idx];
+		return m_SelectedCategoryID;
+	}
+
+	protected void PopulateCategorySidebar()
+	{
+		if (!layoutRoot)
+			return;
+		Widget sidebarRoot = layoutRoot.FindAnyWidget("categoryListRoot");
+		if (!sidebarRoot)
+			return;
+
+		m_CategoryElements.Clear();
+
+		DME_AH_Category allCat = new DME_AH_Category();
+		allCat.CategoryID = 0;
+		allCat.DisplayName = "All Categories";
+		allCat.Icon = "set:dayz_gui image:icon_gear";
+		DME_AH_CategoryElement allElem = new DME_AH_CategoryElement();
+		allElem.Init(sidebarRoot, allCat, this);
+		allElem.SetSelected(true);
+		m_CategoryElements.Insert(allElem);
+
+		DME_AH_CategoryConfig catConfig;
+		DME_AH_Module module = DME_AH_Module.GetInstance();
+		if (module)
+			catConfig = module.GetCategoryConfig();
+		if (!catConfig || !catConfig.Categories || catConfig.Categories.Count() == 0)
+		{
+			catConfig = new DME_AH_CategoryConfig();
+			catConfig.CreateDefaults();
+		}
+
+		for (int i = 0; i < catConfig.Categories.Count(); i++)
+		{
+			DME_AH_Category cat = catConfig.Categories[i];
+			if (!cat)
+				continue;
+			DME_AH_CategoryElement elem = new DME_AH_CategoryElement();
+			elem.Init(sidebarRoot, cat, this);
+			m_CategoryElements.Insert(elem);
+		}
+
+		RefreshCategoryCounts();
+	}
+
+	void RefreshCategoryCounts()
+	{
+		if (!m_CategoryElements || !m_ListingRows)
+			return;
+
+		DME_AH_CategoryConfig catConfig;
+		DME_AH_Module module = DME_AH_Module.GetInstance();
+		if (module)
+			catConfig = module.GetCategoryConfig();
+		if (!catConfig || !catConfig.Categories || catConfig.Categories.Count() == 0)
+		{
+			catConfig = new DME_AH_CategoryConfig();
+			catConfig.CreateDefaults();
+		}
+
+		for (int i = 0; i < m_CategoryElements.Count(); i++)
+		{
+			DME_AH_CategoryElement elem = m_CategoryElements[i];
+			if (!elem)
+				continue;
+			int catID = elem.GetCategoryID();
+			int count = 0;
+			if (catID == 0)
+			{
+				count = m_ListingRows.Count();
+			}
+			else
+			{
+				DME_AH_Category cat = catConfig.GetCategoryByID(catID);
+				if (cat)
+				{
+					for (int r = 0; r < m_ListingRows.Count(); r++)
+					{
+						DME_AH_ListingRow row = m_ListingRows[r];
+						if (row && cat.MatchesItem(row.ItemClassName))
+							count = count + 1;
+					}
+				}
+			}
+			elem.SetCount(count);
+		}
+	}
+
+	void SelectCategory(int categoryID)
+	{
+		m_SelectedCategoryID = categoryID;
+		m_CurrentPage = 0;
+
+		for (int i = 0; i < m_CategoryElements.Count(); i++)
+		{
+			DME_AH_CategoryElement elem = m_CategoryElements[i];
+			if (!elem)
+				continue;
+			elem.SetSelected(elem.GetCategoryID() == categoryID);
+		}
+
+		if (m_ComboCategory && m_CategoryComboIDs)
+		{
+			for (int c = 0; c < m_CategoryComboIDs.Count(); c++)
+			{
+				if (m_CategoryComboIDs[c] == categoryID)
+				{
+					m_ComboCategory.SetCurrentItem(c);
+					break;
+				}
+			}
+		}
+
+		RequestListings();
 	}
 
 	override bool OnChange(Widget w, int x, int y, bool finished)
@@ -747,6 +855,7 @@ class DME_AH_AuctionMenu : UIScriptedMenu
 		}
 
 		UpdatePageInfo();
+		RefreshCategoryCounts();
 	}
 
 	void OnReceiveBalance(int balance)
