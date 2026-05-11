@@ -58,7 +58,7 @@ class DME_AH_NPCConfig
 
 		DME_AH_NPCEntry example = new DME_AH_NPCEntry();
 		example.ID = 1;
-		example.ClassName = "SurvivorF_Eva";
+		example.ClassName = "DME_AH_AuctionNPC";
 		example.Position = new array<float>;
 		example.Position.Insert(6575.0);
 		example.Position.Insert(0.0);
